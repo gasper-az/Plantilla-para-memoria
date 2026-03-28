@@ -2,183 +2,162 @@
 
 \label{Chapter2}
 
+En este capítulo se comienza detallando las técnicas de procesamiento de datos utilizadas en el trabajo.
+Luego, se describen los modelos de \textit{machine learning} entrenados.
+Posteriormente, se describen las distintas herramientas utilizadas para hacer seguimiento de modelos, para automatizar el procesamiento de datos y entrenamiento de modelos, como así también de aquellas herramientas empleadas para consumir y testear APIs.
+Finalmente, se concluye el capítulo detallando el por qué se decidió utilizar contenedores de docker.
+
 %----------------------------------------------------------------------------------------
-%	SECTION 1
-%----------------------------------------------------------------------------------------
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+\section{Técnicas de procesamiento de datos}
 
-\section{Estilo y convenciones}
-\label{sec:ejemplo}
+En este trabajo se emplearon distintas técnicas de procesamiento de datos, las cuales permitieron detectar y tratar \textit{outliers}, escalar variables, balancear el dataset y seleccionar features. En la tabla \ref{tab:procesamiento} se presentan las técnicas utilizadas.
 
-\subsection{Uso de mayúscula inicial para los título de secciones}
+\begin{table}[h]
+	\centering
+	\caption[Técnicas utilizadas]{Técnicas utilizadas en el procesamiento de datos.}
+	\begin{tabular}{c l}
+		\toprule
+		\textbf{Técnica} 	 & \textbf{Utilizada para}\\
+		\midrule
+        IQR                          & Detección de outliers \\
+		Imputación por media         & Tratamiento de outliers \\
+        Imputación por mediana       & Tratamiento de outliers \\
+        Imputación por moda          & Tratamiento de outliers \\
+        Imputación por raíz cuadrada & Tratamiento de outliers \\
+        Imputación de Yeo-Johnson \citep{article:yeojohnson}    & Tratamiento de outliers \\
+        \textit{Standard scaler}     & Escalado de variables \\
+        SMOTE                        & Balanceo de dataset \\
+        SMOTE-ENN                    & Balanceo de dataset \\
+        ADASYN                       & Balanceo de dataset \\
+        Información mutua            & Selección de features \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:procesamiento}
+\end{table}
 
-Si en el texto se hace alusión a diferentes partes del trabajo referirse a ellas como capítulo, sección o subsección según corresponda. Por ejemplo: ``En el capítulo \ref{Chapter1} se explica tal cosa'', o ``En la sección \ref{sec:ejemplo} se presenta lo que sea'', o ``En la subsección \ref{subsec:ejemplo} se discute otra cosa''.
+\subsection{Detección y tratamiento de outliers}
 
-Cuando se quiere poner una lista tabulada, se hace así:
+En este tipo de trabajo, en donde se entrenan modelos de modelos de \textit{machine learning}, suelen utilizarse datasets con una gran cantidad de variables (columnas) y datos (registros).
+
+Las variables de estos datasets suelen presentar distintos tipos de distribuciones matemáticas, las cuales se analizan a fin de descubrir algunas de sus características. Entre estas se encuentran los valores atípicos u \textit{outliers}, cuya presencia no solo afecta a la propia distribución, sino también al rendimiento de los modelos.
+
+Por este motivo, uno de los procesamientos que se implementan en este trabajo es el de detectar y tratar \textit{outliers}.
+
+Para detectarlos, se utiliza la técnica de IQR o rango intercuartil \citep{article:iqr}. Esta mide la dispersión del 50\% central de los datos, es decir, aquellos que se encuentran entre el percentil 25 (cuartil 1 o Q1) y el percentil 75 (cuartil 3 o Q3), y se define mediante la ecuación \ref{eq:iqr}.
+
+\begin{equation}
+	\label{eq:iqr}
+	IQR = Q3 - Q1
+\end{equation}
+
+Una vez definido el rango intercuartil, se consideran outliers a aquellos valores que se encuentran 1.5 veces el IQR debajo del cuartil 1, o 1.5 veces el IQR sobre el cuartil 3, tal como se define en la ecuación \ref{eq:outlier}.
+
+Una vez detectados los outliers, se imputan mediante distintas técnicas, entre las que se encuentran:
 
 \begin{itemize}
-	\item Este es el primer elemento de la lista.
-	\item Este es el segundo elemento de la lista.
+\item Imputación por media: reemplaza los valores atípicos con el valor medio de la distribución.
+\item Imputación por mediana: reemplaza los valores atípicos con la mediana de la distribución.
+\item Imputación por moda: reemplaza los valores atípicos con la moda de la distribución.
+\item Transformación por raíz cuadrada: aplica la función de raíz cuadrada sobre la columna entera.
+\item Transformación de Yeo-Johnson \citep{article:yeojohnson}: permite normalizar datos, estabilizar la varianza y reducir el sesgo en una distribución. Es una mejora de la transformación Box-Cox \citep{article:boxcox}, ya que funciona con cualquier número real.
 \end{itemize}
 
-Notar el uso de las mayúsculas y el punto al final de cada elemento.
+\begin{equation}
+    \label{eq:outlier}
+    outlier(x) = 
+\begin{cases}
+    \text{No es outlier} & Q_1 - 1.5*IQR \le x \le Q_3 + 1.5*IQR \\
+    \text{Si es outlier} &  \text{para todo otro caso }
+\end{cases}
+\end{equation}
 
-Si se desea poner una lista numerada el formato es este:
+\subsection{Escalado de variables}
 
-\begin{enumerate}
-	\item Este es el primer elemento de la lista.
-	\item Este es el segundo elemento de la lista.
-\end{enumerate}
+Además de los \textit{outliers}, las magnitudes de las variables de un dataset pueden también afectar el rendimiento de los modelos. Por ejemplo, si una variable tiene un rango de valores entre 0 y 100 y otra entre 0 y 1000, el modelo puede interpretar que la segunda es más importante, lo cual podría ser erróneo.
 
-Notar el uso de las mayúsculas y el punto al final de cada elemento.
+Para solucionar estos inconvenientes se utilizan técnicas de escalado de variables.
 
-\subsection{Este es el título de una subsección}
-\label{subsec:ejemplo}
-
-Se recomienda no utilizar \textbf{texto en negritas} en ningún párrafo, ni tampoco texto \underline{subrayado}. En cambio sí se debe utilizar \textit{texto en itálicas} para palabras en un idioma extranjero, al menos la primera vez que aparecen en el texto. En el caso de palabras que estamos inventando se deben utilizar ``comillas'', así como también para citas textuales. Por ejemplo, un \textit{digital filter} es una especie de ``selector'' que permite separar ciertos componentes armónicos en particular.
-
-La escritura debe ser impersonal. Por ejemplo, no utilizar ``el diseño del firmware lo hice de acuerdo con tal principio'', sino ``el firmware fue diseñado utilizando tal principio''. 
-
-El trabajo es algo que al momento de escribir la memoria se supone que ya está concluido, entonces todo lo que se refiera a hacer el trabajo se narra en tiempo pasado, porque es algo que ya ocurrió. Por ejemplo, "se diseñó el firmware empleando la técnica de test driven development".
-
-En cambio, la memoria es algo que está vivo cada vez que el lector la lee. Por eso transcurre siempre en tiempo presente, como por ejemplo:
-
-``En el presente capítulo se da una visión global sobre las distintas pruebas realizadas y los resultados obtenidos. Se explica el modo en que fueron llevados a cabo los test unitarios y las pruebas del sistema''.
-
-Se recomienda no utilizar una sección de glosario sino colocar la descripción de las abreviaturas como parte del mismo cuerpo del texto. Por ejemplo, RTOS (\textit{Real Time Operating System}, Sistema Operativo de Tiempo Real) o en caso de considerarlo apropiado mediante notas a pie de página.
-
-Si se desea indicar alguna página web utilizar el siguiente formato de referencias bibliográficas, dónde las referencias se detallan en la sección de bibliografía de la memoria, utilizado el formato establecido por IEEE en \citep{IEEE:citation}. Por ejemplo, ``el presente trabajo se basa en la plataforma EDU-CIAA-NXP \citep{CIAA}, la cual...''.
-
-\subsection{Figuras} 
-
-Al insertar figuras en la memoria se deben considerar determinadas pautas. Para empezar, usar siempre tipografía claramente legible. Luego, tener claro que \textbf{es incorrecto} escribir por ejemplo esto: ``El diseño elegido es un cuadrado, como se ve en la siguiente figura:''
-
-\begin{figure}[h]
-\centering
-\includegraphics[scale=.45]{./Figures/cuadradoAzul.png}
-\end{figure}
-
-La forma correcta de utilizar una figura es con referencias cruzadas, por ejemplo: ``Se eligió utilizar un cuadrado azul para el logo, como puede observarse en la figura \ref{fig:cuadradoAzul}''.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[scale=.45]{./Figures/cuadradoAzul.png}
-	\caption{Ilustración del cuadrado azul que se eligió para el diseño del logo.}
-	\label{fig:cuadradoAzul}
-\end{figure}
-
-El texto de las figuras debe estar siempre en español, excepto que se decida reproducir una figura original tomada de alguna referencia. En ese caso la referencia de la cual se tomó la figura debe ser indicada en el epígrafe de la figura e incluida como una nota al pie, como se ilustra en la figura \ref{fig:palabraIngles}.
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics[scale=.3]{./Figures/word.jpeg}
-	\caption{Imagen tomada de la página oficial del procesador\protect\footnotemark.}
-	\label{fig:palabraIngles}
-\end{figure}
-
-\footnotetext{Imagen tomada de \url{https://goo.gl/images/i7C70w}}
-
-La figura y el epígrafe deben conformar una unidad cuyo significado principal pueda ser comprendido por el lector sin necesidad de leer el cuerpo central de la memoria. Para eso es necesario que el epígrafe sea todo lo detallado que corresponda y si en la figura se utilizan abreviaturas entonces aclarar su significado en el epígrafe o en la misma figura.
-
-
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[scale=.37]{./Figures/questionMark.png}
-	\caption{¿Por qué de pronto aparece esta figura?}
-	\label{fig:questionMark}
-\end{figure}
-
-Nunca colocar una figura en el documento antes de hacer la primera referencia a ella, como se ilustra con la figura \ref{fig:questionMark}, porque sino el lector no comprenderá por qué de pronto aparece la figura en el documento, lo que distraerá su atención.
-
-Otra posibilidad es utilizar el entorno \textit{subfigure} para incluir más de una figura, como se puede ver en la figura \ref{fig:three graphs}. Notar que se pueden referenciar también las figuras internas individualmente de esta manera: \ref{fig:1de3}, \ref{fig:2de3} y \ref{fig:3de3}.
- 
-\begin{figure}[!htpb]
-     \centering
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=.65\textwidth]{./Figures/questionMark}
-         \caption{Un caption.}
-         \label{fig:1de3}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=.65\textwidth]{./Figures/questionMark}
-         \caption{Otro.}
-         \label{fig:2de3}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
-         \includegraphics[width=.65\textwidth]{./Figures/questionMark}
-         \caption{Y otro más.}
-         \label{fig:3de3}
-     \end{subfigure}
-        \caption{Tres gráficos simples.}
-        \label{fig:three graphs}
-\end{figure}
-
-El código para generar las imágenes se encuentra disponible para su reutilización en el archivo \file{Chapter2.tex}.
-
-\subsection{Tablas}
-
-Para las tablas utilizar el mismo formato que para las figuras, sólo que el epígrafe se debe colocar arriba de la tabla, como se ilustra en la tabla \ref{tab:peces}. Observar que sólo algunas filas van con líneas visibles y notar el uso de las negritas para los encabezados.  La referencia se logra utilizando el comando \verb|\ref{<label>}| donde label debe estar definida dentro del entorno de la tabla.
-
-\begin{verbatim}
-\begin{table}[h]
-	\centering
-	\caption[caption corto]{caption largo más descriptivo}
-	\begin{tabular}{l c c}    
-		\toprule
-		\textbf{Especie}     & \textbf{Tamaño} & \textbf{Valor}\\
-		\midrule
-		Amphiprion Ocellaris & 10 cm           & \$ 6.000 \\		
-		Hepatus Blue Tang    & 15 cm           & \$ 7.000 \\
-		Zebrasoma Xanthurus  & 12 cm           & \$ 6.800 \\
-		\bottomrule
-		\hline
-	\end{tabular}
-	\label{tab:peces}
-\end{table}
-\end{verbatim}
-
-
-\begin{table}[h]
-	\centering
-	\caption[caption corto]{caption largo más descriptivo.}
-	\begin{tabular}{l c c}    
-		\toprule
-		\textbf{Especie} 	 & \textbf{Tamaño} 		& \textbf{Valor}  \\
-		\midrule
-		Amphiprion Ocellaris & 10 cm 				& \$ 6.000 \\		
-		Hepatus Blue Tang	 & 15 cm				& \$ 7.000 \\
-		Zebrasoma Xanthurus	 & 12 cm				& \$ 6.800 \\
-		\bottomrule
-		\hline
-	\end{tabular}
-	\label{tab:peces}
-\end{table}
-
-En cada capítulo se debe reiniciar el número de conteo de las figuras y las tablas, por ejemplo, figura 2.1 o tabla 2.1, pero no se debe reiniciar el conteo en cada sección. Por suerte la plantilla se encarga de esto por nosotros.
-
-\subsection{Ecuaciones}
-\label{sec:Ecuaciones}
-
-Al insertar ecuaciones en la memoria dentro de un entorno \textit{equation}, éstas se numeran en forma automática  y se pueden referir al igual que como se hace con las figuras y tablas, por ejemplo ver la ecuación \ref{eq:metric}.
+En particular, se utiliza la técnica de \textit{Standard Scaler} \citep{WEBSITE:standardscaler}, cuya fórmula se observa en la ecuación \ref{eq:standardscaler}. Esta transforma los datos de una variable para que tengan una media ($\mu$) de 0 y una desviación estándar ($\sigma$) de 1, es decir, asemeja la distribución a la de una normal.
 
 \begin{equation}
-	\label{eq:metric}
-	ds^2 = c^2 dt^2 \left( \frac{d\sigma^2}{1-k\sigma^2} + \sigma^2\left[ d\theta^2 + \sin^2\theta d\phi^2 \right] \right)
+	\label{eq:standardscaler}
+	z = \frac{x-\mu}{\sigma}
 \end{equation}
-                                                        
-Para generar la ecuación \ref{eq:metric} se utilizó el siguiente código:
 
-\begin{verbatim}
-\begin{equation}
-	\label{eq:metric}
-	ds^2 = c^2 dt^2 \left( \frac{d\sigma^2}{1-k\sigma^2} + 
-	\sigma^2\left[ d\theta^2 + 
-	\sin^2\theta d\phi^2 \right] \right)
-\end{equation}
-\end{verbatim}
+\subsection{Balanceo de dataset}
+
+Al trabajar con problemas de clasificación, los datasets implementados tienen una columna \textit{target} u objetivo, la cual describe a una clase a la cual pertenece cada registro. Una de las particularidades que se pueden presentar es la del desbalance: una clase tiene una cantidad mucho mayor de casos que el resto. Estas se conocen como clases dominantes, y su presencia puede afectar el rendimiento de modelos de \textit{machine learning} al hacer que estos ignoren a las clases minoritarias.
+
+Para solucionar este problema, se utilizan técnicas de sobremuestreo u \textit{oversampling}, las cuales agregan registros extras al dataset con el fin de tener un dataset balanceado.
+
+En este trabajo se utilizan las siguientes técnicas:
+\begin{itemize}
+    \item SMOTE \citep{article:smote}: permite generar ejemplos sintéticos en función de un caso de la clase minoritaria y sus vecinos más cercanos.
+    \item ADASYN \citep{article:adasyn}: consiste en una evolución de SMOTE, la cual genera datos sintéticos en áreas donde la densidad de la clase minoritaria es baja y está rodeada de la clase mayoritaria.
+    \item SMOTE-ENN \citep{article:smoteenn}: consiste en una técnicas que comienza aplicando SMOTE, para luego eliminar ejemplos de clases que difieran de sus vecinos mediante ENN (\textit{Edited Nearest Neighbors}.
+\end{itemize}
+
+\subsection{Selección de features}
+
+Otra particularidad de los datasets utilizados en este tipo de trabajo es la cantidad de variables presentes. Estos valores suelen ser muy variados, ya que hay datasets con menos de 10 variables (como el iris dataset \citep{WEBSITE:iris-dataset}, que tiene 6 columnas), mientras que otros pueden tener 100 y más columnas.
+
+Para estos últimos casos resulta conveniente aplicar técnicas de selección de características o \textit{features}. Estas nos permiten filtrar algunas columnas con el fin de quedarse con las más importantes. De esta manera, se elimina cierto ruido de datos pocos relevantes, como así también se reduce el sobreajuste (u \textit{overfitting}) al entrenar modelos.
+
+En particular, en este trabajo se hace uso de la técnica de información mutua o \textit{mutual information} \citep{article:mutualinformation}. Esta permite permite cuantificar cuánta información se obtiene sobre la variable objetivo al utilizar una característica en particular, es decir, que tan dependientes son entre sí. A mayor valor, mayor es la información que una \textit{feature} nos proporciona sobre la variable objetivo. Por eso, se busca obtener la información mutua de todas las columnas frente al \textit{target}, luego se hace un ranking ordenando de mayor a menor, y finalmente se selecciona un subconjunto de las mejores variables de dicho ranking.
+
+%----------------------------------------------------------------------------------------
+\section{Modelos de inteligencia artificial}
+
+En los trabajos de clasificación mediante datasets, los primeros pasos y tareas suelen dedicarse a la preparación del dataset, utilizando técnicas como las mencionadas anteriormente. Una vez preparado, los datasets son utilizados como entrada de distintos algoritmos de \textit{machine learning} con el fin de obtener un modelo. Estos modelos posteriormente nos permiten realizar predicciones o clasificaciones a partir de datos particulares de entrada.
+
+En este trabajo, se implementan los siguientes modelos de \textit{machine learning}:
+
+\begin{itemize}
+    \item Regresión logística o \textit{logistic regression} \citep{model:lr}: permite obtener la probabilidad de pertenencia a una de las clases de estudio. A partir de dicha probabilidad se determina a qué clase pertenece una muestra en particular.
+    \item SVM o \textit{support vector machine} \citep{model:svm}: se caracteriza por buscar un hiperplano que separe las clases de estudio con el margen más amplio posible.
+    \item XGBoost \citep{model:xgboost}: consiste en un modelo de ensambles basado en árboles de decisión. Estos árboles son entrenados de manera secuencial, especializándose en corregir los errores del árbol anterior. Esto permite que sea un modelo robusto al evitar el sobreajuste.
+\end{itemize}
+
+%----------------------------------------------------------------------------------------
+\section{Optimización de hiperparámetros}
+
+Los modelos de \textit{machine learning} se caracterizan por tener hiperparámetros: variables de configuración que se definen antes de comenzar el entrenamiento. Estas se diferencian de un parámetro ya que controlan como se comporta el algoritmo.
+
+A partir de esto, surge la necesidad de optimizar estos hiperparámetros con el fin de encontrar un equilibrio óptimo entre sesgo y varianza, lo cual a su vez permite evitar el sobreajuste (\textit{overfitting}) o subajuste (\textit{underfitting} del modelo.
+
+En este trabajo se utiliza el \textit{framework} optuna \citep{WEBSITE:optuna}: una biblioteca de código abierto basada en python. Esta utiliza una optimización bayesiana para, en lugar de probar valores al azar, aprender de intentos anteriores y enfocarse en las combinaciones de hiperparámetros más prometedoras, encontrando así las más óptimas.
+
+%----------------------------------------------------------------------------------------
+\section{Herramientas - Tracking server}
+
+Al trabajar con distintos modelos de \textit{machine learning} resulta crucial hacer un seguimiento de los mismos, enfocándose en los datos o datasets de entrada utilizados, los hiperparámetros configurados, las métricas y gráficos obtenidas luego del entrenamiento, entre otras cosas.
+
+En este trabajo se utiliza MLFlow \citep{WEBSITE:mlflow}, una herramienta de código abierto que nos permite hacer este seguimiento y registro de configuraciones, a fin de utilizar tanto estos valores como los modelos en otras etapas del trabajo.
+
+%----------------------------------------------------------------------------------------
+\section{Herramientas para automatización}
+
+Este trabajo consta de distintas etapas, tales como el preprocesamiento de dataset, entrenamiento de modelos, optimización de hiperparámetros, obtención de métricas, entre otras.
+
+El trabajo realizada en ellas se automatiza mediante la herramienta de código abierto Airflow \citep{WEBSITE:airflow}, la cual nos permite programar, automatizar y monitorear los flujos de trabajo o \textit{workflows} mencionados.
+
+Estos \textit{workflows} se organizan mediante DAGs\footnote{\url{https://www.astronomer.io/docs/learn/dags}}, o grafo acíclico dirigido por sus siglas en inglés, los cuales siguen un orden lógico (secuencial o en paralelo) sin bucles para lograr un objetivo. De esta forma, se pueden orquestar tareas y escalar procesos de manera automática.
+
+%----------------------------------------------------------------------------------------
+\section{Desarrollo de API y herramientas para su consumo}
+
+En este trabajo se presenta una herramienta web que permite realizar predicciones sobre la quiebra de una empresa. Esta consiste en un API Rest, una interfaz de programación de aplicaciones cuya arquitectura, basada en REST \citep{article:rest-api}, permite la comunicación e intercambio de datos mediante el protocolo HTTP. Esto permite que el servicio web sea escalable, ya que las distintas peticiones de clientes se pueden distribuir entre distintas instancias de un mismo servicio; y simple, ya que tiene métodos HTTP o \textit{endpoints} para operaciones como predicción, recuperación de datos, etc.; 
+
+Para desarrollarlo, se usa el framework FastAPI \citep{WEBSITE:fastapi}, el cual permite programar las API utilizando código python, brindando simplicidades tales como la documentación automática, el soporte de métodos asincrónicos, validación automática de datos de entrada, entre otras.
+
+Para validar el correcto funcionamiento de esta API se utilizan herramientas como curl \citep{WEBSITE:curl} y postman \citep{WEBSITE:postman}, las cuales permiten realizar peticiones web a los distintos \textit{endpoints} disponibles, tanto de manera manual como automática.
+
+%----------------------------------------------------------------------------------------
+\section{Uso de contenedores}
+
+Las distintas herramientas mencionadas se pueden utilizar de diferentes maneras. Una de estas es mediante el uso de contenedores.
+
+Un contenedor o \textit{container} es una unidad de software que empaqueta a una aplicación y a todas sus dependencias a fin de que se ejecute de forma rápida en cualquier entorno. Es decir, permite que un software sea portable, ya que se puede utiliar tanto de manera local como en la nube; aislado, ya que varias aplicaciones se pueden ejecutar en el mismo entorno sin afectarse entre sí; y fácil de desplegar.
+
+El uso de contenedores en este trabajo se usan contenedores mediante la herramienta Docker \citep{WEBSITE:docker}.

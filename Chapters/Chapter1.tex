@@ -5,7 +5,7 @@
 \label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
 \label{IntroGeneral}
 
-En este capítulo se explica la importancia de la predicción de quiebra de empresas. Luego, se detalla el estado del arte actual respecto a esta temática. Se explican también las motivaciones detrás de este trabajo. Finalmente, se describen los objetivos y alcance del trabajo.
+En este capítulo se comienza explicando al lector en qué consiste la quiebra de una empresa, su diferencia con la insolvencia, algunos de las posibles causas de la misma, sus repercusiones y por qué resulta de gran valor predecir este tipo de quiebras. Luego, se detalla el estado del arte en lo que respecta a la predicción de quiebra, remarcando las ventajas y desventajas de las soluciones actuales. Posteriormente, se explican las motivaciones detrás de este trabajo. Finalmente, se describen los objetivos y el alcance del trabajo.
 
 %----------------------------------------------------------------------------------------
 
@@ -22,63 +22,77 @@ En este capítulo se explica la importancia de la predicción de quiebra de empr
 %\section{Introducción}
 
 %----------------------------------------------------------------------------------------
-\section{Predicción de quiebra de empresas}
+\section{Contexto del trabajo}
 
-Predecir si una empresa entra en quiebra es información de gran valor para distintos actores del mercado financiero. Acceder a esta información en tiempo y forma le permitirá a bancos, compañías aseguradoras, fondos de inversión o consultoras especializadas en riesgo crediticio tomar mejores decisiones en sus respectivas labores.
+La quiebra es un proceso legal y económico en el que entra una empresa cuando esta es incapaz de cumplir con sus obligaciones financieras hacia sus acreedores a medida que vencen, por lo que busca protección o resolución bajo procedimientos legales. Este proceso puede resultar en la reorganización, es decir, en la continuación de operaciones bajo supervisión, o en una liquidación, que consiste en la venta los activos de la empresa junto con su posterior cierre.
 
-El presente trabajo es un emprendimiento personal orientado a la resolución de la problemática presentada. Para llevarlo a cabo, se utiliza el dataset de \textit{Taiwanese Bankruptcy Prediction}\citep{taiwanese_bankruptcy_prediction_572}, el cual contiene información financiera de empresas del mercado de Taiwán entre 1999 y 2009, y fue publicado por el \textit{Taiwan Economic Journal}\footnote{\url{https://www.tejwin.com/en/}}. Esta información será utilizada en el entorno de trabajo que se puede apreciar en la figura \ref{fig:diagBloques}. En este, se refina la información, se entrenan distintos modelos de machine learning, y se comparan dichos modelos a fin de elegir al mejor de ellos. Los resultados obtenidos se publican mediante un servicio web, para que los distintos interesados pueden consultarlos y utilizarlos según sus necesidades.
+Es importante marcar la diferencia entre una empresa insolvente y una en quiebra. La insolvencia es una condición necesaria pero no suficiente para que una empresa entre en quiebra. Una empresa insolvente se caracteriza por tener más activos que pasivos, pero es incapaz de pagar sus deudas a medida que vencen. Pero, una potencial liquidación de estos activos permitiría generar ingresos para pagar a los acreedores. Es decir, la insolvencia hace referencia a una condición financiera, la cual pueder ser temporal e incluso reversible. Por su parte, la quiebra consiste en un proceso legal, al que se llega por la persistencia de la insolvencia. Una característica de las empresas en quiebra es que poseen un patrimonio neto negativo, es decir, poseen menos activos que pasivos, por lo cual sus acreedores no recibirían el pago de sus deudas, incluso si la empresa fuese liquidada \citep{article:corporate_bankruptcy}.
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=\textwidth]{Figures/diagramaEnBloques.png}
-	\caption{Diagrama en bloques.}
-	\label{fig:diagBloques}
-\end{figure}
+Generalmente, la quiebra es el resultado de una acumulación de factores como problemas de flujo de caja, exceso de deuda, mala gestión operativa, saturación del mercado, cambios regulatorios o incluso crisis económicas.
+
+Las repercusiones de la quiebra no solo se ven en el ámbito económico, sino que también en los ámbitos social y legal:
+
+\begin{itemize}
+    \item Económicamente, la quiebra de una empresa podría perjudicar a algunos de sus acreedores, ya que no podrían recibir el pago de sus deudas. Esto a su vez podría generar un efecto dominó sobre estos, provocándoles su insolvencia y/o quiebra. Puede también reducir la productividad económica de una región y el Producto Bruto Internto (PBI), dependiendo del tamaño e influencia de la empresa afectada.
+    \item Socialmente, el desempleo es la consecuencia más directa de una quiebra. Dependiendo de la cantidad de gente afectada, se podría incluso hablar de una recesión a nivel local.
+    \item Legalmente, los procedimientos pueden durar meses o años, lo cual consume recursos que se podrían haber utilizado para pagar deudas. También puede presentar ciertos conflictos de interés entre los acreedores y otros interesados, por ejemplo, al definir quien tiene prioridad sobre el cobro de sus obligaciones.
+\end{itemize}
+
+Es por esto que la predicción de quiebra de una empresa resulta fundamental para distintos interesados. Inversionistas y accionistas podrían decidir si comprar o vender acciones ante una posible pérdida de valor; entidades bancarias evaluarían la calidad crediticia de una empresa y tendrían mejor información para determinar si les otorgan un préstamo o no; algunos proveedores podrían ajustar condiciones de crédito y evitar impagos; los gobiernos podrían diseñar políticas de rescate y apoyo; e incluso la propia gerencia de una empresa podría utilizarla como un sistema de alerta temprana, a fin de implementar medidas de reestructuración o de reducción de costos a fin de evitar la quiebra.
 
 %----------------------------------------------------------------------------------------
 
 \section{Estado del arte}
 
-Existen diversos estudios basados en el dataset de \textit{Taiwanese Bankruptcy Prediction}\citep{taiwanese_bankruptcy_prediction_572}. En algunos de ellos, como en \textit{Comprehensive Evaluation of Bankruptcy Prediction in Taiwanese Firms Using Multiple Machine Learning Models}, se exploran modelos de \textit{machine learning} tales como SVM (\textit{Support Vector Machine})\citep{model:svm} y \textit{Random Forest}\citep{model:rf}. En otros, se analiza cómo ciertas técnicas afectan a las predicciones finales. Por ejemplo, en \textit{Undersampling bankruptcy prediction: Taiwan bankruptcy data}\citep{10.1371/journal.pone.0254030} se estudian los resultados de aplicar técnicas de preprocesamiento de datos mediante \textit{undersampling}.
+Existen diversos estudios, técnicas, mecanismos e incluso soluciones de software que permiten predecir la quiebra de empresas.
 
-Independientemente de los modelos y de las técnicas de preprocesamiento utilizadas, los estudios actuales se limitan a presentar resultados numéricos y conclusiones sobre las herramientas utilizadas, pero ninguno permite utilizar los modelos obtenidos para realizar predicciones reales.
+Hay estudios que buscan encontrar soluciones generales a esta problemática. Por ejemplo, la fórmula matemática \textit{z-score} de Altman \citep{article:altman-z-score} utiliza cinco ratios financieros para obtener la probabilidad de que una empresa quiebre en los próximos dos años. Otras soluciones más modernas, como la propuesta en el paper \textit{Bankruptcy Prediction Using Machine Learning and Data Preprocessing Techniques} \citep{article:bankruptcy-prediction-ml-data-preprocessing}, proponen el uso de modelos de \textit{machine learning} y técnicas de preprocesamiento de datos para solucionar este problema.
+
+Otros estudios se basan en el análisis de un dataset en particular. Por ejemplo, para el dataset de \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572} hay estudios como \textit{Comprehensive Evaluation of Bankruptcy Prediction in Taiwanese Firms Using Multiple Machine Learning Models}, en donde se exploran distintos modelos de \textit{machine learning}; mientras que en otros, como en \textit{Undersampling bankruptcy prediction: Taiwan bankruptcy data} \citep{10.1371/journal.pone.0254030}, se estudian los resultados de aplicar ciertas técnicas de preprocesamiento sobre el dataset, más precisamente, técnicas de \textit{undersampling}.
+
+En cuanto a soluciones de software, existen herramientas como \textit{Gini Machine}\footnote{\url{https://ginimachine.com/}}, una plataforma de análisis predictivo basada en aprendizaje automático, y diseñada bajo el enfoque \textit{no-code}.
+
+Si bien el estado del arte para la predicción de quiebra de empresas presenta diferente soluciones, se observan ciertas desventajas en la mayoría de ellas.
+
+Por ejemplo, en el caso de los estudios y papers, estos son útiles porque describen qué métodos, qué técnicas de procesamiento y qué modelos les permitieron realizar predicciones y obtener buenos resultados. Sin embargo, ninguno presenta dichos modelos mediante una herramienta de acceso al público. Es decir que, si un interesado desea realizar predecir la quiebra de una empresa, este no solo deberá replicar los pasos explicados en el paper, sino que también deberá recolectar información necesaria para generar un set de datos que se adecue a sus necesidades. A su vez, esto imposibilita el acceso a usuarios no expertos en áreas técnicas, tales como matemática, ciencia de datos y/o \textit{machine learning}.
+
+Por su parte, \textit{Gini Machine} resuelve algunas de las problemáticas mencionadas, ya que es una solución \textit{no-code}, es decir, es de uso fácil para aquellos usuarios sin conocimientos programación, de estadística y de \textit{machine learning}. Sin embargo, esta herramienta presenta ciertas desventajas, tales como un alto costo de uso, requerir que el usuario entienda qué datos son importantes para armar un buen dataset, e incluso requiere que la cantidad de datos presentados para armar un modelo sean como mínimo 1000 registros \footnote{\url{https://theresanaiforthat.com/ai/ginimachine/}}.
 
 %----------------------------------------------------------------------------------------
 
 \section{Motivación}
 
-Este trabajo busca solucionar las siguientes problemáticas:
+Tal como se expresó en las secciones anteriores, la predicción de quiebra de una empresa representa información de gran valor para distintos actores del mercado financiero. Acceder a esta información en tiempo y forma les permitirá a bancos, compañías aseguradoras, fondos de inversión, consultoras especializadas en riesgo crediticio, acreedores e incluso a gerentes de empresas tomar mejores decisiones frente a una eventual quiebra de una empresa de su interés.
 
-\begin{itemize}
-\item Permitir a actores del mercado financiero predecir si una empresa entra en quiebra.
-\item Resolver las limitaciones de trabajos actuales, en donde solo se presentan resultados numéricos y conclusiones.
-\end{itemize}
+Si bien hoy existen diferentes soluciones a estas problemáticas, las cuales abarcan desde papers hasta soluciones de software, ninguna de estas ofrece una solución de uso fácil para cualquier tipo de usuario, especialmente para aquellos que no poseen conocimientos técnicos en áreas de matemática, estadística, \textit{machine learning} o incluso programación.
 
-Por ello, se diseña y desarrolla un sistema que implementa técnicas y modelos de \textit{machine learning}. Estos modelos, son entrenados, refinados y comparados para encontrar al que mejor prediga si una empresa entra en quiebra. Una vez seleccionado el mejor de ellos, se lo expone mediante un servicio web, a fin de que distintos interesados puedan utilizarlo según sus necesidades.
+Esto constituye la motivicación principal de este trabajo: la creación y la puesta en marcha de un sistema que permita predecir si una empresa entra en quiebra, priorizando que este sea de fácil acceso y uso para usuarios poco experimentados.
 
 %----------------------------------------------------------------------------------------
 
 \section{Objetivos y alcance}
 
-Este trabajo busca crear y exponer, mediante servicio web, un sistema que prediga si una empresa entra en quiebra.
-Para ello, se define un entorno de trabajo que se caracteriza por ser iterativo, reproducible y escalable, en donde se usa un dataset de origen público\citep{taiwanese_bankruptcy_prediction_572}. Sobre este dataset se aplicarán técnicas de preprocesamiento de datos para mejorarlo. Luego, se entrenarán modelos de \textit{machine learning}, que permitan realizar las predicciones deseadas. Estos modelos serán evaluados y comparados entre sí, a fin de encontrar al "mejor" de ellos. El mejor modelo y los resultados obtenidos serán expuestos mediante un servicio web, para que cualquier interesado pueda hacer uso de ellos. Sobre estos resultados se vuelven a aplicar las técnicas ya mencionadas, para poder refinarlos y reevaluarlos.
+El objetivo de este trabajo consiste en satisfacer las necesidades de distintos actores del mercado financiero respecto a la predicción de quiebra de una empresa. Para ello, se diseña, se crea y se expone un sistema que permita realizar este tipo de predicciones. Este sistema se publica mediante un servicio web, a modo que sea de fácil acceso para los interesados. Respecto al diseño, el sistema requiere únicamente por parte del usuario el ingreso de los datos de una empresa de su interés. De esta forma se eliminan las desventajas presentes en soluciones actuales, tales como el ingreso de gran cantidad de datos para realizar predicciones, como así también tener conocimiento a nivel técnico de los datos presentados.
 
-A partir de esto, se define el siguiente alcance:
+Para lograr este objetivo, se define el siguiente alcance:
 
 \begin{itemize}
-\item Análisis exploratorio de datos: se estudia al dataset en cuestión, para poder conocer mejor sus características, distribuciones, y potenciales errores a corregir.
-\item Preprocesamiento de datos: se aplican técnicas para eliminar duplicados, corrección de datos faltantes, corrección de \textit{outliers}, balanceo de datos, entre otras.
-\item Implementación de modelos de \textit{machine learning}: se implementan modelos como SVM\citep{model:svm}, \textit{logistic regression}\citep{model:lr} y \textit{XGBoost}\citep{model:xgboost}.
-\item Evaluación de modelos: se obtienen métricas y gráficos asociados a cada modelo, para poder compararlos entre sí.
-\item Automatización: se automatizan los pasos anteriores, a fin de preparar los resultados para el servicio web.
-\item Trackeo de resultados: se utiliza el servicio \textit{MLFlow}\citep{WEBSITE:mlflow} para hacer seguimiento de los modelos entrenados y sus métricas.
-\item Creación de un servicio web: se crea una \textit{API} web la cual expone al mejor modelo entrenado, como así también las métricas y gráficos de todos los modelos.
+    \item Definir el set de datos para el problema: en este caso, se utiliza el dataset de origen público \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572}.
+    \item Conducir un análisis exploratorio de datos: estudiar el dataset en cuestión es de vital importancia para conocer sus características, distribuciones, y potenciales errores a corregir.
+    \item Realizar un preprocesamiento de datos: aplicar distintas técnicas de eliminación de duplicados, corrección de datos faltantes, corrección de \textit{outliers}, balanceo de datos, selección de \textit{features} más importantes, entre otras, es de suma importancia para mejorar la calidad del dataset.
+    \item Implementar modelos de \textit{machine learning}: es necesario implementar técnicas robustas basadas en \textit{machine learning}, tales como SVM \citep{model:svm}, logistic regression \citep{model:lr} y XGBoost \citep{model:xgboost}, que permitan realizar tareas de clasificación. De esta manera, se presentan resultados de calidad al usuario.
+    \item Optimizar hiperparámetros de modelos de \textit{machine learning}: es fundamental refinar detalles relacionados a la configuración de los modelos empleados, a fin que la calidad de los resultados sean superiores.
+    \item Obtener métricas y gráficos de cada modelo: estos les otorgan información extra a los usuarios respecto al contexto de sus predicciones.
+    \item Comparar modelos y seleccionar al más optimo: es fundamental que el sistema le permita al usuario final realizar predicciones mediante el mejor modelo posible. Por ello, se comparan los distintos modelos entrenados y optimizados, a fin de encontrar al mejor de ellos.
+    \item Seguimiento de resultados: al entrenar y comparar distintos modelos, es necesario hacer un seguimiento y una persistencia de ellos, como así también de sus métricas y gráficos. Esto facilita la consulta de esta información en distintas etapas, como así también su disposición para las consultas de los usuarios.
+    \item Automatizar etapas: es de suma importancia que las etapas de análisis, optimización, entrenamiento y seguimiento de modelos sean automatizadas. Esto agiliza el ciclo de vida de la aplicación, permitiendo que las mejoras aplicadas al sistema sean publicadas de forma rápida y sencilla para el consumo de los usuarios.
+    \item Crear un servicio web: mediante una API web, un usuario puede realizar predicciones de quiebra al proveer los datos de una empresa en particular. También puede consultar métricas y gráficas de los modelos involucrados, incluyendo al mejor de ellos.
 \end{itemize}
 
-De la misma manera, se definen las actividades que quedan excluídas de este trabajo:
+Por otra parte, dentro de las actividades que quedaron excluidas del alcance, se pueden mencionar:
 
 \begin{itemize}
-\item Despliegue del servicio en plataformas de \textit{cloud computing}, tales como Azure\citep{WEBSITE:azure}, AWS\citep{WEBSITE:aws}, Google Cloud\citep{WEBSITE:gcp}, entre otras.
-\item Creación de interfaz web: el trabajo se limita hasta la creación de una \textit{API} web, la cual se podrá utilizar mediante herramientas existentes, tales como \textit{cURL}\citep{WEBSITE:curl} y otras similares.
-\item Comercialización y distribución: el trabajo se limita a la creación del sistema descrito, más no a su comercialización y/o distribución.
+    \item Despliegue online: el trabajo realizado se expone como un servicio web, el cual se puede ejecutar de manera local. Es decir, no será desplegado en plataformas de \textit{cloud computing}, tales como Azure \citep{WEBSITE:azure}, AWS \citep{WEBSITE:aws}, Google Cloud \citep{WEBSITE:gcp}, entre otras.
+    \item Creación de interfaz web: el trabajo se limita desde la definición de un dataset, hasta la publicación de un servicio web que permite realizar predicciones de quiebra de una empresa. No se desarrollará un sitio web para consumir este servicio. No obstante, el servicio podrá ser utilizado mediante otras herramientas existentes, tales como cURL \citep{WEBSITE:curl}.
+    \item Comercialización y distribución: el trabajo se limita a la creación y despliegue local del sistema descrito, más no a su comercialización y/o distribución.
 \end{itemize}
