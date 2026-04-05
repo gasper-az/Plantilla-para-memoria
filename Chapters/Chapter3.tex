@@ -2,93 +2,249 @@
 
 \label{Chapter3} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
 
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+En este capítulo se comienza describiendo el flujo de trabajo utilizado, explicando la diferencia entre los ambientes locales y dockerizados. Luego, se describe la arquitectura de cada uno de estos ambientes. Después, se detallan los pasos realizados para preprocesar datos, como así también para entrenar y optimizar los hiperparámetros de los modelos. Posteriormente, se explica como se configuran el \textit{tracking server} y Airflow. Finalmente, se describe el diseño del servicio web que permite realizar predicciones.
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% parámetros para configurar el formato del código en los entornos lstlisting
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\lstset{ %
-  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
-  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  captionpos=b,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  %escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  %extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  %frame=single,	                % adds a frame around the code
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  language=[ANSI]C,                % the language of the code
-  %otherkeywords={*,...},           % if you want to add more keywords to the set
-  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,	                   % sets default tabsize to 2 spaces
-  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
-  morecomment=[s]{/*}{*/}
-}
-
-
 %----------------------------------------------------------------------------------------
 %	SECTION 1
 %----------------------------------------------------------------------------------------
-\section{Análisis del software}
- 
-La idea de esta sección es resaltar los problemas encontrados, los criterios utilizados y la justificación de las decisiones que se hayan tomado.
+\section{Flujo de trabajo}
 
-Se puede agregar código o pseudocódigo dentro de un entorno lstlisting con el siguiente código:
+En este trabajo se utilizó un flujo de trabajo que abarca desde la obtención de los datos base hasta la publicación de un servicio web, y  puede ser resumido en gran medida por la figura \ref{fig:flujo_trabajo}.
 
-\begin{verbatim}
-\begin{lstlisting}[caption= "un epígrafe descriptivo"]
-	las líneas de código irían aquí...
-\end{lstlisting}
-\end{verbatim}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{./Figures/diagramaEnBloques.png}
+	\caption{Flujo de trabajo utilizado.}
+	\label{fig:flujo_trabajo}
+\end{figure}
 
-A modo de ejemplo, se muestra el fragmento de código \ref{cod:vControl}:
+\subsection{Etapas del flujo de trabajo}
 
-\begin{lstlisting}[label=cod:vControl,caption=Pseudocódigo del lazo principal de control.]  % Start your code-block
+La primer etapa del flujo de trabajo implementado consta de la obtención del origen de datos del sistema, siendo en este caso el dataset de \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572}, el cual es de origen público y cuenta con más de 6800 registros, los cuales tienen información financiera de empresas del mercado de Taiwán entre 1999 y 2009.
+La última etapa consiste en la publicación de un servicio web, el cual permitirá a los distintos usuarios realizar predicciones utilizando un modelo entrenado en este trabajo.
 
-#define MAX_SENSOR_NUMBER 3
-#define MAX_ALARM_NUMBER  6
-#define MAX_ACTUATOR_NUMBER 6
+Entre estas dos etapas se encuentran otras que se caracterizan por ejecutarse de manera iterativa. Esto se debe a que se busca mejorar los resultados de las iteraciones anteriores, ya sea modificando algunos de sus parámetros o alterando la cantidad y/o orden de sub-tareas dentro de cada etapa. Estas son:
 
-uint32_t sensorValue[MAX_SENSOR_NUMBER];		
-FunctionalState alarmControl[MAX_ALARM_NUMBER];	//ENABLE or DISABLE
-state_t alarmState[MAX_ALARM_NUMBER];						//ON or OFF
-state_t actuatorState[MAX_ACTUATOR_NUMBER];			//ON or OFF
+\begin{itemize}
+    \item Preprocesamiento de datos: en donde, a grandes razgos, se mejora la calidad de dataset. Entre sus sub-tareas se encuentran la división del dataset en train y test, tratamiento de \textit{outliers}, tratamiento de desbalance y selección de \textit{features}.
+    \item Entrenamiento de modelos: en donde se crean, entrenan y optimizan modelos de \textit{machine learning}, utilizados para realizar predicciones de quiebra.
+    \item Evaluación y refinamiento de modelos: en donde se evalúan los modelos de la etapa anterior y se selecciona al mejor de ellos.
+\end{itemize}
 
-void vControl() {
+\subsection{Implementación del flujo de trabajo}
 
-	initGlobalVariables();
-	
-	period = 500 ms;
-		
-	while(1) {
+Para implementar el flujo de trabajo se optó por definir dos ambientes: un ambiente local y otro dockerizado.
 
-		ticks = xTaskGetTickCount();
-		
-		updateSensors();
-		
-		updateAlarms();
-		
-		controlActuators();
-		
-		vTaskDelayUntil(&ticks, period);
-	}
-}
-\end{lstlisting}
+El ambiente local se utiliza principalmente para experimentar distintas técnicas, herramientas e incluso sus posibles combinaciones. Por este motivo, este ambiente está constituído por \textit{notebooks} de python. Una vez determinada cuáles son las mejores técnicas y en que orden deben ejecutarse, se procede a replicarlas en el ambiente dockerizado.
+
+Por su parte, el ambiente dockerizado está orientado a la automatización del flujo de trabajo. De ahí a que se utilicen distintos contenedores de docker. En este caso, se crean contenedores para las etapas desde la descarga del dataset hasta la exposición de los modelos mediante un servicio web.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
+\section{Arquitectura del sistema}
+
+En la sección anterior se describe el por qué del uso de dos ambientes al implementar el flujo de trabajo. En esta sección se describe la arquitectura de cada uno de estos ambientes. Igualmente, se remarca que en las futuras secciones y capítulos, al hablar de "sistema" se hará referencia al sistema desplegado mediante el ambiente dockerizado.
+
+\subsection{Arquitectura del ambiente local}
+
+El ambiente local se caracteriza por estar compuesto por un total de cinco directorios, cada uno dedicado a explorar distintas técnicas y/o herramientas. Cada directorio tiene una cantidad distintas de notebooks de python, las cuales se ejecutan en el orden indicado en la figura \ref{fig:flujo_trabajo_local}. Por su parte, las notebooks generan dos datasets, uno para los datos de entrenamiento o \textit{train}, y otro para los datos de pruebas o \textit{test}. Estos datasets son a su vez utilizados como inputs por las notebooks del directorio siguiente en la secuencia de ejecución.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/diagrama_componentes_local.png}
+	\caption{Arquitectura del ambiente local.}
+	\label{fig:flujo_trabajo_local}
+\end{figure}
+
+El primer directorio que se tiene en el ambiente local es el de análisis exploratorio. Éste, mediante la única notebook presente, se encarga de descargar el dataset original con el fin de analizarlo. En esta notebook se exploran las \textit{features} del dataset y su columna \textit{target} del dataset, haciendo foco en sus distribuciones, búsqueda de valores nulos y atípicos, como así también la cantidad de clases presentes en la columna \textit{target}. Como esta es una notebook con fines exploratorios, el dataset de salida es el mismo que de entrada.
+
+El segundo directorio también consta de una sola notebook. Su objetivo es el de dividir al dataset original en un dataset de \textit{train} y otro de \textit{test}. Estos datasets nuevos constituyen la salida de este directorio, y son utilizados como entrada del siguiente.
+
+El tercer directorio consta de dos notebooks: una para procesar datos nulos los datasets de entrada, y otro para procesar \textit{outliers}. Como los datasets no tienen nulos, los datasets de salida quedan definidos por el notebook de procesamiento de \textit{outliers}.
+
+El cuarto directorio está orientado al \textit{feature engineering}. En este se ejecutan las notebooks de escalado de datos, balanceo de datasets y selección de features de manera secuencial, generando un nuevo dataset de \textit{train} y \textit{test}.
+
+Finalmente, en el quinto directorio se tienen tres notebooks que se ejecutan individualmente. Estas se encargan de optimizar los hiperparámetros y entrenar a los tres modelos de \textit{machine learning} utilizados en este trabajo. Finalmente, cada notebook genera un modelo distinto como salida, los cuales se utilizan localmente para obtener métricas. A partir de estas métricas es que se decide si la ejecución total de notebooks es buena o no, y en caso de serlo, será replicada en el ambiente dockerizado.
+
+\subsection{Arquitectura del ambiente dockerizado}
+
+El ambiente dockerizado consta de cinco módulos principales, entre los que se encuentra el servicio web con el que los usuarios y/o interesados pueden interactuar, ya sea solicitando realizar predicciones o consultando métricas y/o gráficos. En la figura \ref{fig:flujo_trabajo_dockerizado} se puede esta arquitectura.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/diagrama_componentes.png}
+	\caption{Arquitectura del ambiente dockerizado.}
+	\label{fig:flujo_trabajo_dockerizado}
+\end{figure}
+
+El primer módulo e donde se realiza la descarga del dataset, la división de \textit{train} y \textit{test}, y el preprocesamiento. Es decir, este módulo abarca las tareas realizadas en los primeros tres directorios del ambiente local.
+
+En el segundo módulo es donde se realiza la optimización de hiperparámetros y el entrenamiento de los modelos de \textit{machine learning}. Si bien estas dos tareas son secuenciales, las ejecuciones correspondientes a cada modelo se realizan en paralelo. Como salida se obtienen los tres modelos, los cuales son utilizados por los módulos de \textit{tracking server} y "mejor modelo".
+
+El módulo de "mejor modelo", como su nombre lo indica, se encarga de comparar los modelos de \textit{logistic regression}, SVM y XGBoost en función de sus métricas. A partir de esto es que se decide cuál de ellos es el mejor. Este modelo será guardado en el \textit{tracking server}, para que posteriormente puede ser utilizado por el servicio web para realizar predicciones.
+
+El \textit{tracking server} consiste en una implementación de MLFlow. Mediante este, se tiene un servidor en donde se almacenan todas las versiones de los modelos entrenados, sus métricas, sus gráficos, como así también todas las versiones del mejor modelo. De esta manera, se puede acceder a esta información en cualquier momento.
+
+Uno de los componentes que accede al \textit{tracking server} es el servicio web. Más precisamente, accede a la última versión del mejor modelo. También accede a las métricas y gráficos de la última versión de cada modelo entrenado. Esto le permite responder a las solicitudes de usuarios, ya sea para realizar inferencias, como también para responder consultas respecto a métricas y/o gráficas.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3
+%----------------------------------------------------------------------------------------
+\section{Preprocesamiento de datos}
+\label{sec:preprocesamiento_de_datos}
+
+El preprocesamiento abarca las tareas relacionadas a la división de dataset, tratamiento de nulos y de \textit{outliers}, escalado de datos, balanceo de dataset y selección de \textit{features}. A continuación se detalla en que consiste cada una de estas tareas.
+
+\subsection{División del dataset}
+\label{subsec:division_dataset}
+
+El dataset original de \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572} cuenta con un total de 6819 registros, entre los cuales hay un total de 220 casos de empresas que entran en quiebra. Si bien estos datos son suficientes para entrenar los modelos de \textit{machine learning} deseados, se presentan dos inconvenientes.
+
+El primero es que hay un desbalance del dataset, siendo la clase objetivo mayoritaria la de empresas que no entran en quiebra. El segundo problema consiste en la necesidad de datos para evaluar qué tan bien generalizan los modelos.
+
+Mediante la división del dataset en \textit{train} o entrenamiento y \textit{test} o evaluación se podrá resolver parte de este problema. Esto permitirá tener un set de datos reservado exclusivamente para la evaluación de modelos. Para ello, se utilizará la función \texttt{train\_test\_split} \citep{WEBSITE:train_test_split} de la biblioteca scikit-learn \citep{WEBSITE:scikit-learn}. Esta función además cuenta con el parámetro \texttt{stratify}, el cual permite dividir una clase en particular proporcionalmente entre los datasets resultantes.
+
+Al implementar la función \texttt{train\_test\_split} se opta por generar un dataset de \textit{test} equivalente al 30\% de los datos originales, es decir, 2046 registros de un total de 6819. A su vez, mediante el parámetro \texttt{stratify}, se logra una distribución proporcional de registros de empresas en quiebra, quedando 154 para \textit{train} y 66 para \textit{test}.
+
+\subsection{Tratamiento de nulos y outliers}
+
+En este caso comienza buscando la presencia de datos nulos en los datasets de \textit{train} y \textit{test}. Al analizar todas las columnas de estos dataset, no se encontraron nulos, por lo cual tampoco se aplican medidas de corrección.
+
+En cuanto a los \textit{outliers} o datos atípicos, se utiliza la técnica rango intercuartil o IQR para detectarlos. Para tratarlos, se implementan las técnicas de imputación por media, imputación por mediana, imputación por moda, transformación por raíz cuadrada y transformación de Yeo-Johnson. Todas estas técnicas son explicadas en las sección \ref{subsec:tecnicas_procesamiento}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/transformacion-yeo-johnson.png}
+	\caption{Transformación de Yeo-Johnson sobre la columna Total Asset Turnover.}
+	\label{fig:transformacion-yeo-johnson}
+\end{figure}
+
+Los cálculos del IQR y de las medidas de tendencia central (media, moda y mediana) se hicieron sobre el dataset de \textit{train}, más no sobre el de \textit{test}. Luego, en \textit{test} se consideran \textit{outliers} a aquellos valores que no se encuentren en el IQR de \textit{text}, según cada columna, y se imputan con los valores obtenidos en \textit{train}.
+
+Esto es para evitar que haya \textit{data leakage}, es decir, que se filtren datos o características del dataset de \textit{test} en el dataset de \textit{train}. Si esto sucediese, los modelos de \textit{machine learning} entrenados con estos dataset con datos filtrados podrían aprender indirectamente algunas de estas características, evitando así que generalicen correctamente. En cuanto a la transformación por raíz cuadrada y transformación de Yeo-Johnson, estas simplemente se aplican sobre todo el rango de valores de los datasets deseados por separado.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/imputacion-por-mediana.png}
+	\caption{Imputación por mediana sobre la columna Cash Flow Per Share.}
+	\label{fig:imputacion-por-mediana}
+\end{figure}
+
+Para definir qué técnica se aplica en cada columna, se opta por primero aplicar las cinco técnicas a cada columna. Luego, para cada técnicas, se calculan cuántos \textit{outliers} hay en la columna modificada. Finalmente, se elige a aquella técnica que haya generado la menor cantidad posible de \textit{outliers}.
+
+Si bien este método ayuda a reducir la cantidad de datos atípicos, estos no serán siempre cero. Por ejemplo, la variable \textit{total asset turnover} se trató con la transformación de Yeo-Johnson, la cual redujo los \textit{outliers} de 247 a cero, tal como se ve en la figura \ref{fig:transformacion-yeo-johnson}. Pero, para el caso de la variable \textit{cash flow per share}, la técnica que menos \textit{outliers} genera es la de imputación por mediana, tal como se ve en la figura \ref{fig:imputacion-por-mediana}, la cual reduce los \textit{outliers} de 383 a 191.
+
+\subsection{Escalado de datos}
+
+Las distintas columnas de los datasets presentan diferentes rangos de valores. Esto es un factor que puede perjudicar a los modelos entrenados con dichos datos, ya que pueden priorizar erróneamente una columna frente a otras solamente por esta diferencia de rangos. Por ello, es fundamental escalar los datos antes de entrenar ciertos modelos de \textit{machine learning}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/standard-scaling-caso-01.png}
+	\caption{Standard scaler aplicado a Total expense/assets.}
+	\label{fig:standard-scaling-01}
+\end{figure}
+
+Para el escalado de datos se toma una estrategia similar a la del tratamiento de \textit{outliers}: las técnicas de escalado se ajustan en el dataset de \textit{train}, y se aplican en ambos datasets. De esta manera se evita el \textit{data leakage} en esta etapa.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/standard-scaling-caso-02.png}
+	\caption{Standard scaler aplicado a Retained Earnings to Total Assets.}
+	\label{fig:standard-scaling-02}
+\end{figure}
+
+En este caso solo se estudia e implementa la técnica de StandardScaler \citep{WEBSITE:standardscaler}. El beneficio se encuentra al entrenar modelos de \textit{logistic regression} y SVM, ya que permite mejorar sus reultados. Por su parte, el modelo XGBoost es más robusto a la diferencia de escalas entre columnas. Esto se puede observar en el paper de \textit{The Impact of Feature Scaling In Machine Learning: Effects on Regression and Classification Tasks} \citep{article:feature-scaling}.
+
+El efecto se puede observar, por ejemplo, en los casos de las columnas \textit{total expense/assets} y \textit{retained earnings to total assets} del dataset de \textit{train}. En la figura \ref{fig:standard-scaling-01}, en el histograma de la izquierda, se observa que la primera de estas columnas tiene un rango relativamente pequeño, que va desde el cero hasta el 0,03, con media de 0,02 y desvío de 0,01. Respecto a la columna \textit{retained earnings to total assets}, en el histograma de la izquierda de la figura \ref{fig:standard-scaling-02}, se observa que el rango original es relativamente mayor, ya que va desde el 0,91 hasta el 0,96, con media 0,94 y desvío de 0,01. Al aplicar \textit{standard scaling} a ambas columnas (por separado) se observa que los rangos ahora se encuentran entre -3 y 3 (aproximadamente) para ambos casos, teniendo ambas una media de 0 y un desvío de 1.
+
+\subsection{Balanceo del dataset}
+
+Tal como se menciona en la sección \ref{subsec:division_dataset}, tanto el dataset original como los dataset resultantes al dividir en \textit{train} y \textit{test} presentan un desbalance en la columna objetivo \textit{Bankrupt}, tal como se observa en la figura \ref{fig:descabalance-target}. Este tipo de problemas deben de resolverse antes de entrenar los modelos deseados, ya que si no los modelos podrán generalizar erróneamente nuevos casos.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/desbalance.png}
+	\caption{Desbalance de la columna Bankrupt? en el dataset de train.}
+	\label{fig:descabalance-target}
+\end{figure}
 
 
+Para resolver el desbalance se realizan pruebas con SMOTE \citep{article:smote}, SMOTE-ENN \citep{article:smoteenn} y ADASYN \citep{article:adasyn}, técnicas que permiten generar datos sintéticos de distintas maneras, tal como se explica en la sección \ref{subsec:tecnicas_balanceo}. Como estos datos son sintéticos, las técnicas se aplican solamente en el dataset de \textit{train}, ya que aplicarlas a \textit{test} podría provocar \textit{data leakage}.
 
+\begin{table}[h]
+	\centering
+	\caption[Técnicas utilizadas]{Resultados de las técnicas de balanceo de datos.}
+	\begin{tabular}{c c c c c}
+		\toprule
+		\textbf{Técnica} 	 & \textbf{Registros nuevos} & \textbf{Clases positivas} & \textbf{Clases negativas}\\
+		\midrule
+        ADASYN & 9265 & 4646 & 4619 \\
+        SMOTE & 9238 & 4619 & 4619  \\
+        SMOTE-ENN & 8547 & 4619 & 3928 \\		
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:resultados-balanceo}
+\end{table}
+
+Los resultados de aplicar estas técnicas se observan en la tabla \ref{tab:resultados-balanceo}. En la misma se observa que SMOTE-ENN es la que menos registros generó, como así también la que mayor diferencia entre clases tiene (la clase positiva, o empresas que entran en quiebra, tiene 691 registros más que la otra clase). Igualmente, se opta por aplicar esta técnica en el flujo de trabajo final, ya que es la que mejor resutados arroja.
+
+\subsection{Selección de features}
+
+La última etapa del preprocesamiento consta de la selección de features. Mediante esta, se busca reducir la cantidad de columnas de los datasets, a modo de quedarse con aquellas que mayor información brindan sobre la columna objetivo.
+
+Para este caso, solamente se implementa la técnica de información mutua, explicada en la sección \ref{subsec:seleccion_features}. En las primeras pruebas realizadas mediante esta técnica, se obtuvieron 66 columnas del dataset de \textit{train} que mejor explican a la variable \textit{target}. El resto de las columnas son posteriormente descartados en ambos datasets. Como el número 66 fue elegido al azar (más precisamente, se eligió al azar el 70\% de las columnas más representativas), se opta por configurar este valor representativo de la cantidad de columnas como un hiperparámetro al entrenar los distintos modelos. De esta manera, se obtiene el número que mejor resultados permita obtener en cuanto a predicciones.
+
+Cabe aclarar que otra técnica estudiada es la de ANOVA \citep{article:anova}. Como prerequisito para aplicarla, es necesario que las distribuciones de cada columna sobre las categorías de la columna objetivo tengan distribución normal y sean homocedásticas (es decir, que tengan varianzas iguales). Como estos prerequisitos no se cumplen en el dataset de \textit{train}, se descarta el uso de la técnica de ANOVA para seleccionar features.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4
+%----------------------------------------------------------------------------------------
+\section{Optimización y entrenamiento de modelos}
+
+Una vez preprocesado el dataset original y generados los datasets de \textit{train} y \textit{test}, se comienza con el entrenamiento de modelos. A fin de generar los modelos más óptimos, se procede a optimizar sus hiperparámetros, como así también se realizan pruebas utilizando \textit{pipelines}.
+
+\subsection{Pipelines y modelos}
+
+En este trabajo se realizaron distintas pruebas con modelos de \textit{machine learning}. En todas estas, el preprocesamiento aplicado era el descrito en la sección \ref{sec:preprocesamiento_de_datos}, es decir, una serie de técnicas que, aplicadas sobre el dataset original, generaban un dataset final de \textit{train} y otro de \textit{test}. Luego, estos dataset se utilizan como \textit{input} de los modelos, tanto para entrenarlos como para evaluarlos. Pero, ciertos modelos no presentaban buenos resultados. Un ejemplo es XGBoost, que en ciertas pruebas arroja un \textit{recall} de 0,42, un valor muy bajo.
+
+Para mejorar esto, se utiliza la clase \texttt{Pipeline} \citep{WEBSITE:imblearn-pipeline} de \textit{Imblearn} \citep{WEBSITE:imblearn}. Tal como su nombre lo indica, permite generar un \textit{pipeline} o secuencia de pasos sobre un dataset a fin de ajustarlo, y posteriormente transformar o aplicar los pasos tanto en este como en otros datasets. Las ventajas que poseen estos \textit{pipelines} es que procesan mejor los datos de datasets desbalanceados, manejan mejor el \textit{cross-validation} con \textit{resampling} (técnica que se explica posteriormente), como así también que está diseñado para usarse al optimizar hiperparámetros.
+
+A nivel implementación, el \textit{pipeline} utilizado consta de los mismos pasos definidos en el preprocesamiento: correción de datos atípicos, escalado, balanceo de datos y selección de features. Se agrega también un paso final correspondiente al entrenamiento del modelo, ya que mejoran los resultados tanto al entrenar como al optimizar hiperparámetros. Luego, mediante el método \texttt{fit} junto al dataset de \textit{train}, aplica las transformaciones a los datos y entrena al modelo, mientras que con el método \texttt{predict} junto al dataset de \textit{test} evalúa al modelo final.
+
+En cuanto a resultados, la misma secuencia de transformaciones que se utilizaron para el modelo XGBoost y dieron un resultado para \textit{recall} de 0,42, con la implementación de la clase \texttt{Pipeline} dieron un \textit{recall} de 0,8. Por este motivo, se opta por utilizar \textit{pipelines} para entrenar y optimizar modelos.
+
+\subsection{Cross validation e implementación durante optimización}
+
+\subsection{Modelo Logistic Regression}
+
+NOTA: se describirán tanto la parte de optimización de hiperparámetros y entrenamiento.
+
+\subsection{Modelo SVM}
+
+NOTA: se describirán tanto la parte de optimización de hiperparámetros y entrenamiento.
+
+\subsection{Modelo XGBoost}
+
+NOTA: se describirán tanto la parte de optimización de hiperparámetros y entrenamiento.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 5
+%----------------------------------------------------------------------------------------
+\section{Tracking server}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 6
+%----------------------------------------------------------------------------------------
+\section{Automatización mediante Airflow}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 7
+%----------------------------------------------------------------------------------------
+\section{Servicio web}
