@@ -19,17 +19,17 @@ En este trabajo se emplearon distintas técnicas de procesamiento de datos, que 
 		\toprule
 		\textbf{Técnica} 	 & \textbf{Utilizada para}\\
 		\midrule
-        IQR                          & Detección de \textit{outliers} \\
-		Imputación por media         & Tratamiento de \textit{outliers} \\
-        Imputación por mediana       & Tratamiento de \textit{outliers} \\
-        Imputación por moda          & Tratamiento de \textit{outliers} \\
-        Imputación por raíz cuadrada & Tratamiento de \textit{outliers} \\
-        Imputación de Yeo-Johnson \citep{article:yeojohnson}    & Tratamiento de \textit{outliers} \\
-        \textit{Standard scaler}     & Escalado de variables \\
-        SMOTE                        & Balanceo de dataset \\
-        SMOTE-ENN                    & Balanceo de dataset \\
-        ADASYN                       & Balanceo de dataset \\
-        Información mutua            & Selección de features \\
+        IQR \citep{article:iqr}                                             & Detección de \textit{outliers} \\
+		Imputación por media \citep{article:mean_median_imputation}         & Tratamiento de \textit{outliers} \\
+        Imputación por mediana \citep{article:mean_median_imputation}       & Tratamiento de \textit{outliers} \\
+        Imputación por moda \citep{article:mode_imputation}                 & Tratamiento de \textit{outliers} \\
+        Imputación por raíz cuadrada \citep{article:sqrt_transformation}    & Tratamiento de \textit{outliers} \\
+        Imputación de Yeo-Johnson \citep{article:yeojohnson}                & Tratamiento de \textit{outliers} \\
+        \textit{Standard scaler} \citep{WEBSITE:standardscaler}             & Escalado de variables \\
+        SMOTE \citep{article:smote}                         & Balanceo de dataset \\
+        SMOTE-ENN \citep{article:smoteenn}                  & Balanceo de dataset \\
+        ADASYN \citep{article:adasyn}                       & Balanceo de dataset \\
+        Información mutua \citep{article:mutualinformation} & Selección de features \\
 		\bottomrule
 		\hline
 	\end{tabular}
@@ -53,6 +53,15 @@ Para detectarlos, se utiliza la técnica de IQR o rango intercuartil \citep{arti
 
 Una vez definido el rango intercuartil, se consideran \textit{outliers} a aquellos valores que se encuentran 1,5 veces el IQR debajo del cuartil 1, o 1,5 veces el IQR sobre el cuartil 3, tal como se define en la ecuación \ref{eq:outlier}.
 
+\begin{equation}
+    \label{eq:outlier}
+    outlier(x) = 
+\begin{cases}
+    \text{No es outlier} & Q_1 - 1,5*IQR \le x \le Q_3 + 1,5*IQR \\
+    \text{Sí es outlier} &  \text{para todo otro caso }
+\end{cases}
+\end{equation}
+
 Una vez detectados los \textit{outliers}, se imputan mediante distintas técnicas, entre las que se encuentran:
 
 \begin{itemize}
@@ -62,15 +71,6 @@ Una vez detectados los \textit{outliers}, se imputan mediante distintas técnica
 \item Transformación por raíz cuadrada: aplica la función de raíz cuadrada sobre la columna entera.
 \item Transformación de Yeo-Johnson \citep{article:yeojohnson}: permite normalizar datos, estabilizar la varianza y reducir el sesgo en una distribución. Es una mejora de la transformación Box-Cox \citep{article:boxcox}, ya que funciona con cualquier número real.
 \end{itemize}
-
-\begin{equation}
-    \label{eq:outlier}
-    outlier(x) = 
-\begin{cases}
-    \text{No es outlier} & Q_1 - 1,5*IQR \le x \le Q_3 + 1,5*IQR \\
-    \text{Sí es outlier} &  \text{para todo otro caso }
-\end{cases}
-\end{equation}
 
 \subsection{Escalado de variables}
 
@@ -144,7 +144,7 @@ Este trabajo consta de distintas etapas, tales como el preprocesamiento de datas
 
 El trabajo realizada en ellas se automatiza mediante la herramienta de código abierto Airflow \citep{WEBSITE:airflow}, la cual nos permite programar, automatizar y monitorear los flujos de trabajo o \textit{workflows} mencionados.
 
-Estos \textit{workflows} se organizan mediante DAGs\footnote{\url{https://www.astronomer.io/docs/learn/dags}}, o grafo acíclico dirigido por sus siglas en inglés, los cuales siguen un orden lógico (secuencial o en paralelo) sin bucles para lograr un objetivo. De esta forma, se pueden orquestar tareas y escalar procesos de manera automática.
+Estos \textit{workflows} se organizan mediante DAGs \citep{WEBSITE:definicion_dags}, o grafo acíclico dirigido por sus siglas en inglés, los cuales siguen un orden lógico (secuencial o en paralelo) sin bucles para lograr un objetivo. De esta forma, se pueden orquestar tareas y escalar procesos de manera automática.
 
 %----------------------------------------------------------------------------------------
 \section{Desarrollo de API y herramientas para su consumo}
