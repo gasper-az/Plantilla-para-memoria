@@ -1,37 +1,49 @@
-% Chapter Template
-
 \chapter{Conclusiones} % Main chapter title
 
-\label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+\label{Chapter5}
 
+En este capítulo se repasan brevemente las tareas realizadas para realizar este trabajo. Finalmente, se detallan una serie de posibles tareas a futuro con el fin de mejorar el trabajo actual.
 
-%----------------------------------------------------------------------------------------
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 1
 %----------------------------------------------------------------------------------------
+\section{Resultados finales}
 
-\section{Conclusiones generales }
+A lo largo de este trabajo se entrenaron diversas versiones de tres modelos de \textit{machine learning} con el objetivo de predecir si una empresa entra en quiebra. Como base se utilizó un dataset de origen público, que contiene información de 6819 empresas del mercado de Taiwán, entre los años 1999 y 2009, de las que 220 corresponden a empresas que entraron en quiebra.
 
-La idea de esta sección es resaltar cuáles son los principales aportes del trabajo realizado y cómo se podría continuar. Debe ser especialmente breve y concisa. Es buena idea usar un listado para enumerar los logros obtenidos.
+Para lograr este objetivo, se definió un flujo de trabajo que consta de cinco etapas: origen de datos, preprocesamiento de datos, entrenamiento de modelos, evaluación y refinamiento, y publicación en un servicio web. La particularidad se encuentra en las tres etapas intermedias, las cuales se desarrollaron de manera iterativa, con el fin de generar modelos con mejor performance en cada iteración.
 
-En esta sección no se deben incluir ni tablas ni gráficos.
+En estas etapas intermedias se estudiaron diversas técnicas sobre el dataset y sobre los modelos de \textit{machine learning}. En la etapa de preprocesamiento de datos, se implementaron técnicas de detección y tratamiento de \textit{outliers}, balanceo de clases y selección de \textit{features} sobre el dataset. Las técnicas de balanceo de clases fueron fundamentales para resolver uno de los principales problemas que tiene el dataset, ya que la clase objetivo está altamente desbalanceada.
 
-Algunas preguntas que pueden servir para completar este capítulo:
+En cuanto a modelos, se estudiaron \textit{Logistic Regression}, SVM y XGBoost. Se optimizaron hiperparámetros de estos modelos con el fin de obtener una versión óptima. Al evaluar estas versiones surgió otro inconveniente, ya que se obtuvieron métricas más bajas a las esperadas. Aquí fue fundamental optar otro enfoque a la hora de entrenar modelos. Este nuevo enfoque se basa en el uso de \textit{pipelines} de \textit{imblearn}, los que están optimizados para trabajar con datos desbalanceados, para trabajar con \textit{cross validation}, y están específicamente diseñados para optimizar hiperparámetros. De esta manera, se logró mejorar el rendimiento de todos los modelos.
+
+Una vez determinadas y estudiadas las técnicas sobre el dataset y sobre el modelo, se continuó con la automatización de estos pasos mediante \textit{airflow}. En esta etapa surgió un inconveniente en el paso correspondiente a la optimización de hiperparámetros. Este demoraba mucho más tiempo de lo esperado. Para solucionar este inconveniente, se optó por agregar una configuración que permita cargar dinámicamente los hiperparámetros a cada modelo. Ya resuelto este inconveniente técnico, se continuó con el desarrollo de un servicio web que permite realizar predicciones con el mejor de estos modelos.
+
+Todo este desarrollo permitió lograr el objetivo del trabajo: tener un servicio web que permite predecir si una empresa entra en quiebra, utilizando un modelo de \textit{machine learning}.
+
+Este trabajo fue posible gracias a los conocimientos adquiridos a lo largo de la especialización, entre las que se encuentran:
 
 \begin{itemize}
-\item ¿Cuál es el grado de cumplimiento de los requerimientos?
-\item ¿Cuán fielmente se puedo seguir la planificación original (cronograma incluido)?
-\item ¿Se manifestó algunos de los riesgos identificados en la planificación? ¿Fue efectivo el plan de mitigación? ¿Se debió aplicar alguna otra acción no contemplada previamente?
-\item Si se debieron hacer modificaciones a lo planificado ¿Cuáles fueron las causas y los efectos?
-\item ¿Qué técnicas resultaron útiles para el desarrollo del proyecto y cuáles no tanto?
+    \item Análisis de datos: se estudiaron las distintas técnicas de procesamiento de dataset utilizadas en este trabajo, tales como tratamiento de \textit{outliers}, balanceo de datasets y selección de \textit{features}.
+    \item Aprendizaje de máquina: se estudiaron los modelos de \textit{machine learning} implementados en este trabajo, como así también las técnicas para optimizar sus hiperparámetros.
+    \item Operaciones de aprendizaje automático I: se estudió la automatización de procesos mediante \textit{airflow}, cómo utilizar \textit{mlflow} para hacer seguimiento de los experimentos realizados, y cómo publicar modelos mediante un servicio web.
 \end{itemize}
-
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
 %----------------------------------------------------------------------------------------
-\section{Próximos pasos}
+\section{Oportunidades de mejora y trabajo a futuro}
 
-Acá se indica cómo se podría continuar el trabajo más adelante.
+Si bien el trabajo logró cumplir con los objetivos propuestos, existen mejoras que se pueden aplicar. Entre ellas se encuentran:
+
+\begin{itemize}
+    \item Refinamiento de los modelos actuales: si bien los modelos utilizados arrojan buenos resultados, una posible mejora consiste en estudiar otras técnicas, ya sean para procesar el dataset o para optimizar hiperparámetros, con el fin de obtener mejores métricas finales.
+    \item Implementar una arquitectura \textit{cloud}: si bien el trabajo actual está desarrollado de manera modular, implementando contenedores de \textit{docker}, este fue solamente desplegado y evaluado en un entorno local. Una posible mejora consiste en desplegarlo en un entorno \textit{cloud}, en donde se puedan explorar algunos servicios para realizar entrenamiento de modelos, como así también para exponer la \textit{api} web de una manera escalable.
+    \item Estudio de otros modelos: en este trabajo se estudiaron los modelos de \textit{Logistic Regression}, SVM y XGBoost. Una mejora del trabajo consiste en explorar otros modelos, por ejemplo, basados en redes neuronales.
+    \item Implementación de \textit{MLSecOps}: otra mejora posible consiste en el uso de MLSecOps o técnicas de seguridad para proyectos de MLOps. Entre estas mejoras se encuentran, por ejemplo, la detección de datos \textit{out-of-distribution} en tiempos de inferencia, detección de \textit{drift} o desplazamiento de datos, o incluso el re-entrenamiento de los modelos a partir de datos utilizados para predicciones.
+\end{itemize}
+

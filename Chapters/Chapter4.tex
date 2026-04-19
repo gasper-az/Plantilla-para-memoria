@@ -1,15 +1,331 @@
-% Chapter Template
-
 \chapter{Ensayos y resultados} % Main chapter title
 
-\label{Chapter4} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+\label{Chapter4}
+
+En este capítulo se comienza detallando cómo se evalúan los modelos estudiados en este trabajo. Luego, se explica cómo se evalúa el entorno de Airflow, haciendo énfasis en los dos DAGs implementados. Posteriormente, se detallan las pruebas realizadas en el servicio web, detallando cada uno de sus \textit{endpoints}. Finalmente, se detalla una prueba realizada con otro dataset.
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 1
 %----------------------------------------------------------------------------------------
+\section{Evaluación de modelos}
+\label{sec:pruebas_indiv_modelos}
 
-\section{Pruebas funcionales del hardware}
-\label{sec:pruebasHW}
+\subsection{Métricas de modelos}
+En este trabajo se estudian los modelos de \textit{Logistic Regression}, SVM y XGBoost. Tal como se explica en la sección \ref{sec:flujo_trabajo} del capítulo \ref{Chapter3}, en cada una de las iteraciones de estudio se genera una nueva versión de estos modelos. Esto aplica tanto a los modelos individuales como de los basados en \textit{pipelines}, tal como se describe en la sección \ref{sec:pipelines_y_modelos} del capítulo \ref{Chapter3}.
 
-La idea de esta sección es explicar cómo se hicieron los ensayos, qué resultados se obtuvieron y analizarlos.
+Debido a la gran cantidad de versiones de modelos creados, surge la necesidad de definir métricas que permitan determinar cuál de estos es el que mejor permite predecir si una empresa entra en quiebra. En la tabla \ref{tab:metricas-de-modelos} se detallan las métricas utilizadas en este trabajo.
+
+\begin{table}[H]
+    \centering
+    \caption{Métricas de modelos.}
+    \begin{tabularx}{\textwidth}{l X X}
+        \toprule
+        \textbf{Métrica} & \textbf{¿Qué mide?} & \textbf{¿Por qué se eligió?} \\
+        \midrule
+        Recall & Capacidad para identificar todos los casos de quiebra reales. & Crucial para minimizar los falsos negativos en riesgos financieros. \\
+        Precision & Exactitud de las predicciones positivas (quiebra). & Evita dar falsas alarmas que descarten inversiones seguras. \\
+        F1-Score & Balance armónico entre Precision y Recall. & Evaluación general en una sola métrica ante datos desbalanceados. \\
+        F2-Score & Balance que prioriza el Recall sobre la Precision. & Capturar quiebras es más crítico que cometer errores de falsa alarma. \\
+        AUPRC & Área bajo la curva de Precision y Recall. & La métrica más robusta para evaluar datasets con clases minoritarias. \\
+        ROC-AUC & Capacidad de discriminación entre empresas sanas y en quiebra. & Evalúa el modelo globalmente sin depender de un umbral específico. \\
+        \bottomrule
+		\hline
+    \end{tabularx}
+    \label{tab:metricas-de-modelos}
+\end{table}
+
+En la tabla \ref{tab:resultados-metricas} se muestran las métricas obtenidas para los modelos \textit{Logistic Regression}, SVM y XGBoost, tanto para sus versiones individiales como aquellas basadas en \textit{pipelines}. En la misma se observa que los resultados obtenidos en las versiones correspondientes a \textit{pipelines} son, en general, superiores a las versiones individuales. Por este motivo es que se seleccionan a las versiones basadas en \textit{pipelines} para cada uno de los modelos.
+
+\begin{table}[H]
+    \centering
+    \caption{Resultados de métricas de modelos.}
+    \begin{tabularx}{\textwidth}{c X c X X c X}
+		\toprule
+		\textbf{Modelo} & \textbf{Recall} & \textbf{Precision} & \textbf{F1-Score} & \textbf{F2-Score} & \textbf{AUPRC} & \textbf{ROC-AUC}\\
+		\midrule
+        Logistic Regression & 0,6818 & 0,1480 & 0,2432 & 0,3961 & 0,2321 & 0,9009 \\
+        LR - Pipeline & 0,8636 & 0,1347 & 0,2331 & 0,4148 & 0,2615 & 0,9181 \\
+        SVM & 0,0303 & 0,1428 & 0,05 & 0,0359 & 0,2158 & 0,8854 \\
+        SVM - Pipeline & 0,8181 & 0,1436 & 0,2443 & 0,4218 & 0,2405 & 0,9101 \\
+        XGBoost & 0,4242 & 0,3544 & 0,3862 & 0,4081 & 0,3327 & 0,9047 \\
+        XGBoost - Pipeline & 0,7727 & 0,2170 & 0,3388 & 0,5110 & 0,3388 & 0,9236 \\
+		\bottomrule
+		\hline
+        \bottomrule
+		\hline
+    \end{tabularx}
+    \label{tab:resultados-metricas}
+\end{table}
+
+\subsection{Comparación entre modelos}
+
+Una vez obtenidas las métricas de los modelos, se procede a compararlos entre sí. Para ello, se hace uso de la métrica AUPRC o \textit{average precision}. Por este motivo, el mejor modelo es "XGBoost - pipeline", tal como se muestra en la tabla \ref{tab:comparacion-modelos}.
+
+\begin{table}[H]
+	\centering
+	\caption[Comparación entre modelos]{Comparación entre modelos.}
+	\begin{tabular}{c c}
+		\toprule
+		\textbf{Modelo} 	 & \textbf{AUPRC} \\
+		\midrule
+        XGBoost - pipeline & 0,3388 \\
+        Logistic Regression - Pipeline & 0,2615 \\
+        SVM - pipeline & 0,2405 \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:comparacion-modelos}
+\end{table}
+
+A la hora de validar que se selecciona el modelo correcto, se hace uso del \textit{model registry} de MLFlow. En este, se registran las distintas versiones del modelo final del trabajo, cuyo nombre es \textit{bankruptcy\_prediction}. En los metadatos del mismo se indica qué \textit{run} o ejecución lo generó. Tal como se observa en la imagen \ref{fig:best-model}, en la versión número 4 del modelo final se detalla que se genera a partir de XGBoost, lo cual indica que la comparación entre modelos funciona correctamente.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/best_model.png}
+	\caption{Mejor modelo - \textit{Model registry} de MLFLow.}
+	\label{fig:best-model}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
+\section{Evaluación de entorno Airflow}
+\label{sec:evaluacion_airflow}
+
+En la sección \ref{sec:automatizacion_airflow} del capítulo \ref{Chapter3} se explica cómo se automatizan procesos mediante Airflow. En esta sección se explica cómo se evalúa el correcto funcionamiento de este.
+
+\subsection{DAG \textit{download and split dataset}}
+
+El primer DAG \citep{WEBSITE:airflow_dags} que se ejecuta en Airflow es \textit{download and split dataset}. Este se compone con dos tareas: \textit{download\_dataset\_to\_s3}, que se encarga de descargar el dataset original y guardarlo en S3 (más precisamente, en minio), y la tarea \textit{split\_raw\_dataset\_and\_store\_to\_s3}, que se encarga de hacer la división en \textit{train} y \textit{test}, y guardar los resultados en S3/minio.
+
+Entonces, para evaluar que se ejecuta correctamente se deben revisar los \textit{logs} de Airflow y validar que los datasets estén siendo guardados en S3/minio.
+
+En la figura \ref{fig:validacion_dag01} se observa la correcta ejecución del dag \textit{download and split dataset}, en donde ambas tareas aparecen marcadas como correctas.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/download_and_split_dataset.png}
+	\caption{Validación DAG \textit{download and split dataset}.}
+	\label{fig:validacion_dag01}
+\end{figure}
+
+En la figura \ref{fig:validacion_datasets_minio} se observan en S3/minio los datasets de \textit{raw}, el cual es generado por la tarea \textit{download\_dataset\_to\_s3}, como así también los datasets de \textit{train} y \textit{test}, ambos generados por la tarea \textit{split\_raw\_dataset\_and\_store\_to\_s3}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/datasets_minio.png}
+	\caption{Validación datasets en S3/minio.}
+	\label{fig:validacion_datasets_minio}
+\end{figure}
+
+\subsection{DAG \textit{model training}}
+
+En la sección \ref{sec:model_training} del capítulo \ref{Chapter3} se detalla al DAG de \textit{model training}. Este está compuesto por tres tareas que se ejecutan en paralelo, las cuales son \textit{logistic\_regression\_training}, que entrena un modelo \textit{Logistic Regression}, \textit{svm\_training}, que entrena un modelo SVM, y \textit{xgboost\_training}, que entrena un modelo XGBoost. Una vez finalizadas estas tareas, se ejecuta una tarea final, \textit{seleccionar\_champion}, cuyo objetivo es el de seleccionar al mejor modelo.
+
+Para validar que este DAG funciona correctamente se hace uso de los logs de Airflow. Además, se valida que cada tarea registre correctamente los modelos entrenados en MLFlow.
+
+En la figura \ref{fig:validacion_dag02} se observan los resultados de la ejecución del DAG \textit{model training}, en donde se detalla que cada tarea tuvo un resultado satisfactorio.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/model_training_validation.png}
+	\caption{Validación DAG \textit{model training}.}
+	\label{fig:validacion_dag02}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3
+%----------------------------------------------------------------------------------------
+\section{Evaluación de selección del mejor modelo con otras métricas}
+
+En la sección \ref{sec:pruebas_indiv_modelos} se detalla cómo se evalúa la selección del mejor modelo mediante el uso del \textit{model registry} de MLFlow. En este caso, se hace uso de la métrica AUPRC o \textit{average precision}, ya que es la mejor para casos donde el dataset presenta desbalance. Igualmente, el sistema desarrollado permite elegir otras métricas sobre la cuál se elige al mejor modelo.
+
+Si se utiliza la métrica de \textit{recall}, los modelos quedan ordenados tal como se detalla en la tabla \ref{tab:comparacion-modelos-recall}. De esta manera, el modelo a elegir como \textit{champion} es el "Logistic Regression - Pipeline".
+
+\begin{table}[h]
+	\centering
+	\caption[Comparación mediante recall]{Comparación entre modelos mediante \textit{recall}.}
+	\begin{tabular}{c c}
+		\toprule
+		\textbf{Modelo} 	 & \textbf{recall} \\
+		\midrule
+        Logistic Regression - Pipeline & 0,8636 \\
+        SVM - pipeline & 0,8181 \\
+        XGBoost - pipeline & 0,7727 \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:comparacion-modelos-recall}
+\end{table}
+
+En la figura \ref{fig:best_model_recall} se observa que el nuevo mejor modelo, cuya versión es la número 5, fue creado en base al modelo \textit{Logistic Regression}, tal como debe suceder al elegir la métrica \textit{recall} como método de decisión.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/best_model_recall.png}
+	\caption{Best model - métrica recall.}
+	\label{fig:best_model_recall}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4
+%----------------------------------------------------------------------------------------
+\section{Evaluación de Servicio Web}
+\label{sec:eval_servicio_web}
+
+En esta sección se detallan las pruebas realizadas a cada uno de los \textit{endpoints} del servicio web. Estas pruebas se realizan mediante la herramienta Postman \citep{WEBSITE:postman}.
+
+\subsection{Evaluación de \textit{endpoint} \textit{get\_champion\_image}}
+\label{sec:eval_get_champion_image}
+El \textit{endpoint} \textit{get\_champion\_image} permite obtener una imagen asociada al modelo \textit{champion}. El mismo se define mediante la URL \texttt{champion/image/<name>}, en donde \textit{<name>} puede tomar alguno de los siguientes valores:
+
+\begin{itemize}
+    \item \textit{confusion\_matrix}: devuelve el gráfico de la matriz de confusión del modelo \textit{champion}.
+    \item \textit{confusion\_matrix\_normalized\_by\_row}: devuelve el gráfico de la matriz de confusión normalizada por fila del modelo \textit{champion}.
+    \item \textit{precision\_recall\_curve}: devuelve el gráfico de la curva \textit{precision-recall} del modelo \textit{champion}.
+    \item \textit{roc\_curve}: devuelve el gráfico de la curva ROC del modelo \textit{champion}.
+\end{itemize}
+
+A partir de esto, se definen dos tipos de pruebas: una en la que se busca validar que, al ingresar uno de los nombres de imágenes correcto, se obtiene el gráfico correspondiente; y otra en la que, al ingresar un nombre erróneo, se obtiene un mensaje de error.
+
+En la figura \ref{fig:champion_image_01} se observa el resultado obtenido al realizar una solicitud del gráfico de \textit{confusion matrix normalized by row}. Esto se logra al utilizar el valor de \textit{confusion\_matrix\_normalized\_by\_row} para el campo \textit{<name>} de la URL de este \textit{endpoint}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/champion_image_01.png}
+	\caption{Best model - Confusion matrix normalized by row.}
+	\label{fig:champion_image_01}
+\end{figure}
+
+En la figura \ref{fig:champion_image_02} se observa el resultado obtenido al utilizar un valor erróneo. En este caso, el valor que se utiliza es \textit{invalid}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/champion_image_02.png}
+	\caption{Best model - Imagen inválida.}
+	\label{fig:champion_image_02}
+\end{figure}
+
+\subsection{Evaluación de \textit{endpoint} \textit{get\_champion\_metrics}}
+\label{sec:eval_get_champion_metrics}
+El \textit{endpoint} \textit{get\_champion\_metrics} permite obtener las métricas asociadas al mejor modelo o modelo \textit{champion}. Se define mediante la URL \texttt{champion/metrics}, y se caracteriza por no tener parámetros. En la figura \ref{fig:champion_metrics} se observan los resultados de evaluar este \textit{endpoint}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.70\textwidth]{./Figures/champion_metrics.png}
+	\caption{Champion - metrics}
+	\label{fig:champion_metrics}
+\end{figure}
+
+\subsection{Evaluación de \textit{endpoint} \textit{get\_experiment\_image}}
+
+El \textit{endpoint} \textit{get\_experiment\_image} se define a partir de la siguiente URL:
+
+\begin{itemize}
+    \item \texttt{experiment/<experiment>/image/<image>}
+\end{itemize}
+
+Esta tiene dos parámetros: \texttt{<experiment>}, que indica a qué experimento se quiere consultar, siendo los valores posibles \texttt{}{logistic\_regression}, \texttt{svm} y \texttt{xgboost}; y el parámetro \texttt{<image>}, que indica qué imagen se desea obtener, siendo los valores posibles los mismos que para el \textit{endpoint} \textit{get\_champion\_image}, detallados en la sección \ref{sec:eval_get_champion_image}.
+
+Los métodos para evaluar este endpoint son similares a los descriptos en la sección \ref{sec:eval_get_champion_image}, es decir, utilizando tanto valores válidos como inválidos para los parámetros \texttt{<experiment>} e \texttt{<image>}.
+
+\subsection{Evaluación de \textit{endpoint} \textit{get\_experiment\_metrics}}
+
+El \textit{endpoint} \textit{get\_experiment\_metrics} permite obtener métricas de un experimento dado. Está definido por la siguiente URL:
+
+\begin{itemize}
+    \item \texttt{experiment/<experiment>/metrics}
+\end{itemize}
+
+La misma tiene un solo parámetro: \texttt{<experiment>}. Este acepta únicamente los valores \texttt{}{logistic\_regression}, \texttt{svm} y \texttt{xgboost}.
+
+La manera de evaluar este \textit{endpoint} es similar a la de \textit{get\_champion\_metrics}, detallada en la sección \ref{sec:eval_get_champion_metrics}. La única diferencia es que ahora se debe indicar a qué experimento se desea consultar. Si el experimento indicado es correcto, se verá un resultado similar al de la sección \ref{sec:eval_get_champion_metrics}. En caso contrario, se muestra un mensaje de error, en que se indica que el parámetro ingresado es erróneo, y se listan los valores posibles a utilizar.
+
+\subsection{Evaluación de \textit{endpoint} \textit{predict}}
+
+El \textit{endpoint} \textit{predict} permite realizar predicciones con el modelo \textit{champion} a partir de una serie de datos ingresados por el usuario. Este \textit{endpoint} se define a partir de la URL \texttt{predict}. No tiene parámetros en la URL, pero si acepta un \texttt{body} en su \textit{request}, el cual debe tener la información de una empresa dada, detallando un valor para las 95 variables del dataset.
+
+A partir de esta información, se devuelve un mensaje, el cual indica si la empresa entra en quiebra o no. En la figura \ref{fig:predict} se observan los resultados de una prueba en la que la empresa consultada no entra en quiebra.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.80\textwidth]{./Figures/predict.png}
+	\caption{Endpoint predict}
+	\label{fig:predict}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 5
+%----------------------------------------------------------------------------------------
+\section{Evaluación del entorno MLFlow}
+
+La evaluación del entorno MLFlow, tanto su \textit{model registry} como su \textit{tracking server}, se hizo en función de las integraciones con Airflow y con el servicio web.
+
+Airflow hace uso del \textit{tracking server} a la hora de registrar los entrenamientos de los modelos \textit{Logistic Regression}, SVM y XGBoost, mientras que al \textit{model registry} lo utiliza para guardar el mejor modelo. Esto se refleja en el DAG \textit{model\_training}, más precisamente, en las tareas \textit{logistic\_regression\_training}, \textit{svm\_training} y \textit{xgboost\_training} para el \textit{tracking server}; y la tarea \textit{seleccionar\_champion} para el caso del \textit{model registry}. Como las pruebas de la sección \ref{sec:evaluacion_airflow} son satisfactorias, podemos decir que la integración de MLFlow y Airflow también lo es.
+
+Respecto al servicio web, este hace uso del \textit{model registry} para obtener el modelo \textit{champion} en los \textit{endpoints} de \textit{get\_champion\_image}, \textit{get\_champion\_metrics} y \textit{predict}. Por su parte, el \textit{tracking server} se utiliza para obtener modelos específicos en los \textit{endpoints} de \textit{get\_experiment\_image} y \textit{get\_experiment\_metrics}. Como las pruebas de la sección \ref{sec:eval_servicio_web} son satisfactorias, la integración entre MLFlow y el servicio web también lo es.
+
+De esta manera se comprueba que el entorno MLFlow, tanto a nivel de \textit{tracking server} como de \textit{model registry}, está funcionando correctamente.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 6
+%----------------------------------------------------------------------------------------
+\section{Evaluación con otro dataset}
+
+A fin de determinar si el mejor modelo permite predecir quiebra de empresas de cualquier país, se opta por evaluarlo utilizando otros datasets. Para ello, se utiliza el dataset de \textit{Polish Companies Bankruptcy} \citep{dataset:polish_companies_bankruptcy_365}, el cual contiene información financiera de empresas polacas entre los años 2000 y 2012. La particularidad de este dataset es que tiene menos columnas que el dataset de Taiwán, de las cuales solo 11 pueden son equivalentes. Estas se detallan en la tabla \ref{tab:polish-taiwan}.
+
+\begin{table}[H]
+    \centering
+    \caption{Equivalencia de columnas entre datasets de Polonia y Taiwán.}
+    \begin{tabularx}{\textwidth}{X X}
+		\toprule
+		\textbf{Columna - Polonia} & \textbf{Columna - Taiwán} \\
+		\midrule
+        Attr1 (net profit / total assets)			& Net Income to Total Assets \\
+        Attr2 (total liabilities / total assets)	& Total debt/Total net worth \\
+        Attr3 (working capital / total assets)		& Working Capital to Total Assets \\
+        Attr4 (current assets / short-term liabilities)	& Current Ratio \\
+        Attr6 (retained earnings / total assets)	& Retained Earnings to Total Assets \\
+        Attr7 (EBIT / total assets)	& ROA(C) before interest and depreciation before interest \\
+        Attr9 (sales / total assets)	& Revenue Per Share (Yuan ¥) \\
+        Attr11 (gross profit + ... / total assets)	& ROA(B) before interest and depreciation after tax \\
+        Attr14 (profit on operating activities / ...)	& Pre-tax net Interest Rate \\
+        Attr46 (current assets - inventory / ...)	& Quick Ratio \\
+        Attr51 (short-term liabilities / total assets)	& Current Liability to Assets \\
+        Attr58 (total costs / total sales)	& Total income/Total expense \\
+		\bottomrule
+		\hline
+        \bottomrule
+		\hline
+    \end{tabularx}
+    \label{tab:polish-taiwan}
+\end{table}
+
+En cuanto a registros, el dataset de Polonia cuenta con 7027, de los cuales 6756 corresponden a empresas que no entran en quiebra, mientras que los 271 restantes corresponden a empresas que si entran en quiebra.
+
+Para evaluar el dataset de Polonia, se realiza una conversión de nombres para que coincidan con los del dataset de Taiwán. En cuanto a las columnas faltantes, estas se dejan con valores iguales a cero, a fin de que el modelo se encargue de procesarlas. La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, dando como resultado los valores que se muestran en la tabla \ref{tab:evaluacion-dataset-polonia}.
+
+\begin{table}[H]
+	\centering
+	\caption[Evaluación del dataset de Polonia]{Evaluación del dataset de Polonia.}
+	\begin{tabular}{c c c}
+		\toprule
+		\textbf{Métrica} 	 & \textbf{Dataset de Polonia} & \textbf{Dataset de Taiwán} \\
+		\midrule
+        recall & 1 & 0,7727 \\
+        precision & 0,0386 & 0,2227 \\
+        f1-score & 0,0743 & 0,3457 \\
+        f2-score & 0,1672 & 0,5172 \\
+        AUPRC (average precision) & 0,0429 & 0,3259\\
+        AUC-ROC & 0,5096 & 0,9210 \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:evaluacion-dataset-polonia}
+\end{table}
+
+Los valores correspondientes al dataset de Polonia son muy bajos. El valor de AUC-ROC, el cual es $0,5096$, indica que el comportamiento del modelo con estos datos es similar a un modelo aleatorio. El \textit{recall} es de $1$, es decir, clasifica correctamente a todos los casos de quiebra, pero al analizar la \textit{precision}, la cual es de $0,0386$, se deduce que el modelo clasifica la mayoría de los casos como quiebra, independientemente de si lo son o no. Esta diferencia de performance puede deberse a varios motivos, tales como la diferencia de información entre datasets, debido a que uno tiene 11 columnas y el otro 95; a cómo se obtuvieron estos valores; a cómo se mide la quiebra en estos países, ya que pueden tener diferentes normas contables y legislaciones de quiebra; entre otras.
