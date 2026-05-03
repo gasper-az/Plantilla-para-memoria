@@ -137,7 +137,7 @@ Pero, para el caso de la variable \texttt{cash flow per share}, la técnica que 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/imputacion-por-mediana.png}
-	\caption{Imputación por mediana sobre la columna \texttt{Cash Flow Per Share}.}
+	\caption{Imputación por mediana sobre \texttt{Cash Flow Per Share}.}
 	\label{fig:imputacion-por-mediana}
 \end{figure}
 
@@ -154,7 +154,7 @@ El efecto se puede observar, por ejemplo, en los casos de las columnas \texttt{t
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/standard-scaling-caso-01.png}
-	\caption{Standard scaler aplicado a \texttt{Total expense/assets}.}
+	\caption{Standard scaler - \texttt{Total expense/assets}.}
 	\label{fig:standard-scaling-01}
 \end{figure}
 
@@ -163,7 +163,7 @@ Respecto a la columna \texttt{retained earnings to total assets}, en el histogra
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/standard-scaling-caso-02.png}
-	\caption{Standard scaler aplicado a \texttt{Retained Earnings to Total Assets}.}
+	\caption{Standard scaler - \texttt{Retained Earnings to Total Assets}.}
 	\label{fig:standard-scaling-02}
 \end{figure}
 
@@ -338,7 +338,7 @@ Desde el punto de vista técnico, se utiliza la clase \texttt{XGBClassifier} \ci
 
 De la misma manera que en la sección \ref{subsec:cap3_models_lr}, se exploran los hiperparámetros para determinar la cantidad óptima de \textit{features} para la selección mediante \textit{mutual information}.
 
-Los mejores hiperparamétros encontrados para XGBoost se listan en la tabla \ref{tab:xgboost-hip}.
+Los mejores hiperparámetros encontrados para XGBoost se listan en la tabla \ref{tab:xgboost-hip}.
 
 \begin{table}[ht]
 	\centering
@@ -383,9 +383,9 @@ Estos objetos generados son utilizados en etapas posteriores. Por ejemplo, el se
 
 A partir de esto surge la necesidad de utilizar un \textit{tracking server} que permita almacenar estos recursos, hacer seguimiento de los cambios y comparar los resultados obtenidos.
 
-Por estos motivos se utiliza \texttt{MLFlow} \citep{WEBSITE:mlflow}, una plataforma de código abierto que permite gestionar el ciclo de vida de los modelos entrenados. Esta herramienta cuenta tanto con un \textit{tracking server} \citep{WEBSITE:mlflow_tracking_server} como con un \textit{model registry} \citep{WEBSITE:mlflow_model_registry}, los que pueden ser utilizados mediante un paquete de Python. La diferencia entre el \textit{model registry} y el \textit{tracking server} es que este último se enfoca más en la experimentación, mientras que el primero se enfoca más en la gobernanza y producción.
+Por estos motivos se utiliza \texttt{MLFlow} \citep{WEBSITE:mlflow}, una plataforma de código abierto que permite gestionar el ciclo de vida de los modelos entrenados. Esta herramienta cuenta tanto con un \textit{tracking server} \citep{WEBSITE:mlflow_tracking_server} como con un \textit{model registry} \citep{WEBSITE:mlflow_model_registry}, que pueden ser utilizados mediante un paquete de Python. La diferencia entre el \textit{model registry} y el \textit{tracking server} es que este último se enfoca más en la experimentación, mientras que el primero se enfoca más en la gobernanza y producción.
 
-El \textit{tracking server} permite guardar los resultados de cada experimento. Cada experimento se administra con una \textit{run} o ejecución, en donde se guardan los modelos en sí, sus parámetros, sus métricas y algunos gráficos. Esto se logra mediante la clase \texttt{mlflow} \citep{WEBSITE:mlflow_api} del paquete python, la que tiene los siguientes métodos:
+El \textit{tracking server} permite guardar los resultados de cada experimento. Cada experimento se administra con una \textit{run} o ejecución, en donde se guardan los modelos en sí, sus parámetros, sus métricas y algunos gráficos. Esto se logra mediante la clase \texttt{mlflow} \citep{WEBSITE:mlflow_api} del paquete python, que tiene los siguientes métodos:
 
 \begin{itemize}
     \item \texttt{start\_run}: permite comenzar una \textit{run}, como así también grabar cierta información de la misma.
@@ -414,7 +414,7 @@ Para esto se utiliza \texttt{airflow} \citep{WEBSITE:airflow}, un paquete de pyt
 
 \subsection{DAG - download and split dataset}
 
-El primer DAG definido es \texttt{download\_and\_split\_dataset}, el que se observa en la figura \ref{fig:dag01}. Su propósito es el de descargar el dataset \textit{Taiwanese Bankruptcy Prediction} y hacer su división en \textit{train} y \textit{test}.
+El primer DAG definido es \texttt{download\_and\_split\_dataset}, que se observa en la figura \ref{fig:dag01}. Su propósito es el de descargar el dataset \textit{Taiwanese Bankruptcy Prediction} y hacer su división en \textit{train} y \textit{test}.
 
 \begin{figure}[htbp]
 	\centering
@@ -423,7 +423,7 @@ El primer DAG definido es \texttt{download\_and\_split\_dataset}, el que se obse
 	\label{fig:dag01}
 \end{figure}
 
-Para esto, se divide el DAG en dos tareas, las que se ejecutan secuencialmente:
+Para esto, se divide el DAG en dos tareas que se ejecutan secuencialmente:
 
 \begin{itemize}
     \item \texttt{download\_and\_load\_dataset}: descarga el dataset original y lo guarda en una base de datos S3 (que se encuentra dockerizado).
@@ -432,7 +432,7 @@ Para esto, se divide el DAG en dos tareas, las que se ejecutan secuencialmente:
 
 \subsection{DAG - model training}
 \label{sec:model_training}
-El segundo DAG es \texttt{model\_training}, el que se observa en la figura \ref{fig:dag02}. Su propósito es optimizar los hiperparámetros de los modelos, entrenar los modelos y finalmente elegir al mejor de ellos.
+El segundo DAG es \texttt{model\_training}, que se observa en la figura \ref{fig:dag02}. Su propósito es optimizar los hiperparámetros de los modelos, entrenar los modelos y finalmente elegir al mejor de ellos.
 
 \begin{figure}[htbp]
 	\centering
@@ -441,7 +441,7 @@ El segundo DAG es \texttt{model\_training}, el que se observa en la figura \ref{
 	\label{fig:dag02}
 \end{figure}
 
-Este DAG se caracteriza por ejecutar tres tareas en paralelo, que convergen en una tarea final. Cada una de estas leen los dataset de \textit{train} y \textit{test} originados en el DAG anterior.
+Este DAG se caracteriza por ejecutar tres tareas en paralelo que convergen en una tarea final. Cada una de estas leen los dataset de \textit{train} y \textit{test} originados en el DAG anterior.
 
 Las tareas que se ejecutan en paralelo, que a su vez ejecutan internamente dos tareas secuenciales, son los siguientes:
 
