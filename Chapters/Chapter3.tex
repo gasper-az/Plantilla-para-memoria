@@ -412,14 +412,14 @@ Una vez definidos el preprocesamiento de datos, los modelos a utilizar, sus hipe
 
 Para esto se utiliza \texttt{airflow} \citep{WEBSITE:airflow}, un paquete de python que actúa como orquestador del flujo de trabajo. Este permite definir DAGs o \textit{directed acyclic graph} \citep{WEBSITE:airflow_dags}, un grafo acíclico dirigido donde cada nodo representa las tareas de un determinado flujo, mientras que las aristas marcan el orden de ejecución. En particular, se definieron dos DAGs.
 
-\subsection{DAG - download and split dataset}
+\subsection{DAG - \texttt{download and split dataset}}
 
 El primer DAG definido es \texttt{download\_and\_split\_dataset}, que se observa en la figura \ref{fig:dag01}. Su propósito es el de descargar el dataset \textit{Taiwanese Bankruptcy Prediction} y hacer su división en \textit{train} y \textit{test}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/dag_download_and_split_dataset.png}
-	\caption{DAG - download and split dataset}
+	\caption{DAG - \texttt{download and split dataset}.}
 	\label{fig:dag01}
 \end{figure}
 
@@ -430,14 +430,14 @@ Para esto, se divide el DAG en dos tareas que se ejecutan secuencialmente:
     \item \texttt{split\_raw\_dataset}: toma el dataset original de S3 y lo divide en \textit{train} y \textit{test}. Finalmente, guarda estos dos datasets nuevos para ser utilizados en otros DAGs.
 \end{itemize}
 
-\subsection{DAG - model training}
+\subsection{DAG - \texttt{model training}}
 \label{sec:model_training}
 El segundo DAG es \texttt{model\_training}, que se observa en la figura \ref{fig:dag02}. Su propósito es optimizar los hiperparámetros de los modelos, entrenar los modelos y finalmente elegir al mejor de ellos.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/dag_model_training.png}
-	\caption{DAG - model training.}
+	\caption{DAG - \texttt{model training}.}
 	\label{fig:dag02}
 \end{figure}
 

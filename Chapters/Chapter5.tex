@@ -2,7 +2,7 @@
 
 \label{Chapter5}
 
-En este capítulo se repasan brevemente las tareas realizadas para realizar este trabajo. Finalmente, se detallan una serie de posibles mejora a futuro con el fin de mejorar el desarrollo actual.
+En este capítulo se repasan brevemente las tareas realizadas para realizar este trabajo. Finalmente, se detallan una serie de posibles mejoras a futuro con el fin de mejorar el desarrollo actual.
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -11,15 +11,15 @@ En este capítulo se repasan brevemente las tareas realizadas para realizar este
 %----------------------------------------------------------------------------------------
 %	SECTION 1
 %----------------------------------------------------------------------------------------
-\section{Resultados finales}
+\section{Conclusiones generales}
 
 A lo largo de este trabajo se entrenaron diversas versiones de tres modelos de \textit{machine learning} con el objetivo de predecir si una empresa entra en quiebra. Como base se utilizó un dataset de origen público, que contiene información de 6819 empresas del mercado de Taiwán, entre los años 1999 y 2009, de las que 220 corresponden a empresas que entraron en quiebra.
 
 Este dataset fue procesado mediante diferentes técnicas. Por un lado, con técnicas de imputación (media, mediana y moda) y transformación de datos (Raíz cuadrada y Yeo-Johnson), se logró disminuir la cantidad de outliers presentes en cada columna del dataset. Por otro lado, el uso de la técnica de \texttt{SMOTE-ENN} solucionó el desbalance de clases del dataset. De esta forma, se generó un dataset de \textit{train} con 4619 casos de empresas que entran en quiebra y 3928 que no. Se mencionan también las técnicas de \texttt{StandardScaler} para escalar los datos, como la selección de \textit{features} mediante información mutua, ya que estas también permitieron mejorar la calidad del dataset.
 
-En cuanto a modelos, se estudiaron \textit{Logistic Regression}, SVM y XGBoost, como así también se optimizaron sus hiperparámetros para obtener una versión óptima. En este caso, fue fundamental el uso de modelos basados en \textit{pipelines} de \textit{imblearn}, ya que mejoraron el rendimiento de todos los modelos. A modo de ejemplo, se menciona el \textit{recall} de \textit{XGBoost}, donde la versión normal obtuvo un 0,4242 y la versión con \textit{pipeline} un 0,7727.
+En cuanto a modelos, se estudiaron \textit{Logistic Regression}, SVM y XGBoost, como así también se optimizaron sus hiperparámetros para obtener una versión óptima. En este caso, fue fundamental el uso de modelos basados en \textit{pipelines} de \textit{imblearn}, ya que mejoraron el rendimiento de todos los modelos. A modo de ejemplo, se menciona el \textit{recall} de \textit{XGBoost}, en que la versión normal obtuvo un 0,4242 y la versión con \textit{pipeline} un 0,7727.
 
-Con las herramientas de \textit{airflow} y MLFlow se obtuvo un ambiente automatizado, reproducible, rastreable y escalable. Esto permitió realizar diversas iteraciones, donde se estudiaron y mejoraron los modelos de \textit{machine learning}. Finalmente, se implementó un servicio web que permite realizar predicciones con el mejor de estos modelos.
+Con las herramientas de Airflow y MLFlow se obtuvo un ambiente automatizado, reproducible, rastreable y escalable. Esto permitió realizar diversas iteraciones, en que se estudiaron y mejoraron los modelos de \textit{machine learning}. Finalmente, se implementó un servicio web que permite realizar predicciones con el mejor de estos modelos.
 
 Este modelo final, expuesto mediante un servicio web, alcanzó un AUPRC de 0,3388, diez veces mayor que la probabilidad del azar (0,032). Esto garantiza una detección temprana y precisa de quiebras en el mercado de Taiwán.
 
@@ -33,13 +33,13 @@ Este modelo final, expuesto mediante un servicio web, alcanzó un AUPRC de 0,338
 
 % Todo este desarrollo permitió lograr el objetivo del trabajo: tener un servicio web que permite predecir si una empresa entra en quiebra, utilizando un modelo de \textit{machine learning}.
 
-Este trabajo fue posible gracias a los conocimientos adquiridos en distintas materias de la especialización, entre las que se encuentran:
+% Este trabajo fue posible gracias a los conocimientos adquiridos en distintas materias de la especialización, entre las que se encuentran:
 
-\begin{itemize}
-    \item Análisis de datos: se estudiaron las distintas técnicas de procesamiento de dataset utilizadas en este trabajo, tales como tratamiento de \textit{outliers}, balanceo de datasets y selección de \textit{features}.
-    \item Aprendizaje de máquina: se estudiaron los modelos de \textit{machine learning} implementados en este trabajo, como así también las técnicas para optimizar sus hiperparámetros.
-    \item Operaciones de aprendizaje automático I: se estudió la automatización de procesos mediante \textit{airflow}, cómo utilizar \textit{mlflow} para hacer seguimiento de los experimentos realizados, y cómo publicar modelos mediante un servicio web.
-\end{itemize}
+% \begin{itemize}
+%     \item Análisis de datos: se estudiaron las distintas técnicas de procesamiento de dataset utilizadas en este trabajo, tales como tratamiento de \textit{outliers}, balanceo de datasets y selección de \textit{features}.
+%     \item Aprendizaje de máquina: se estudiaron los modelos de \textit{machine learning} implementados en este trabajo, como así también las técnicas para optimizar sus hiperparámetros.
+%     \item Operaciones de aprendizaje automático I: se estudió la automatización de procesos mediante Airflow, cómo utilizar MLFlow para hacer seguimiento de los experimentos realizados, y cómo publicar modelos mediante un servicio web.
+% \end{itemize}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
@@ -49,7 +49,7 @@ Este trabajo fue posible gracias a los conocimientos adquiridos en distintas mat
 Si bien el trabajo logró cumplir con los objetivos propuestos, existen mejoras que se pueden aplicar. Entre ellas se encuentran:
 
 \begin{itemize}
-    \item Refinamiento de los modelos actuales: si bien los modelos utilizados arrojan buenos resultados, una posible mejora consiste en estudiar otras técnicas, ya sean para procesar el dataset o para optimizar hiperparámetros, con el fin de obtener mejores métricas finales. Por ejemplo, se podrían imputar los \textit{outliers} mediante métodos más robustos basados en \textit{Random Forest} o \textit{Gradient Boosting}.
+    \item Refinamiento de los modelos actuales: si bien los modelos utilizados arrojan buenos resultados, una posible mejora consiste en estudiar otras técnicas, ya sean para procesar el dataset o para optimizar hiperparámetros, con el fin de obtener mejores métricas finales. Por ejemplo, se podrían imputar los \textit{outliers} mediante métodos más robustos basados en Random Forest o Gradient Boosting.
     \item Implementar una arquitectura \textit{cloud}: si bien el trabajo actual está desarrollado de manera modular, implementando contenedores de \textit{docker}, este fue solamente desplegado y evaluado en un entorno local. Una posible mejora consiste en desplegarlo en un entorno \textit{cloud}, en donde se puedan explorar algunos servicios para realizar entrenamiento de modelos, como así también para exponer la \textit{api} web de una manera escalable.
     \item Estudio de otros modelos: en este trabajo se estudiaron los modelos de \textit{Logistic Regression}, SVM y XGBoost. Una mejora del trabajo consiste en explorar otros modelos, por ejemplo, basados en redes neuronales.
     \item Implementación de MLSecOps: otra mejora posible consiste en el uso de técnicas de seguridad para proyectos de MLOps. Entre estas mejoras se encuentran, por ejemplo, la detección de datos \textit{out-of-distribution} en tiempos de inferencia, detección de \textit{drift} o desplazamiento de datos, o incluso el re-entrenamiento de los modelos a partir de datos utilizados para predicciones.
