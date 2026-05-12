@@ -394,22 +394,23 @@ Se puede decir que el modelo entrenado con el dataset de Taiwán puede detectar 
 \subsection{Dataset de Estados Unidos}
 \label{subsec:dataset_usa}
 
-Se utiliza el dataset de \textit{Bankruptcy prediction dataset for american companies in the stock market} \ref{subsec:dataset_usa}, que contiene información financiera de empresas que cotizan en bolsas estadounidenses (NYSE y NASDAQ). Esta información cubre los años entre 1998 y 2018, y se divide en 78682 y 21 columnas. Solo 13 de estas 21 columnas tienen un equivalente en el dataset de Taiwán:
+Se utiliza el dataset de \textit{Bankruptcy prediction dataset for american companies in the stock market} \citep{dataset:usa_bankruptcy}, que contiene información financiera de empresas que cotizan en bolsas estadounidenses (NYSE y NASDAQ). Esta información cubre los años entre 1998 y 2018, y se divide en 78682 y 21 columnas. Solo 13 de estas 21 columnas tienen un equivalente en el dataset de Taiwán:
 
 \begin{itemize}
-    \item \texttt{Bankrupt?}: Se obtiene a partir de la columna \texttt{status\_label} del dataset de Estados Unidos. Es la variable objetivo. Se caracteriza por estar desbalanceada (5220 presentan quiebra, mientras que 73462 no).
+    \item \texttt{Bankrupt?}: se obtiene a partir de la columna \texttt{status\_label} del dataset de Estados Unidos, y se trata de la variable objetivo. Se caracteriza por estar desbalanceada (5220 presentan quiebra, mientras que 73462 no).
     \item \texttt{Net Income to Total Assets}: división entre las columnas \texttt{X6} y \texttt{X10} del dataset de Estados Unidos. Representa la rentabilidad sobre activos (ROA).
     \item \texttt{Debt ratio \%}: división entre las columnas \texttt{X17} y \texttt{X10} del dataset de Estados Unidos. Representa la proporción de deuda.
     \item \texttt{Current Ratio}: división entre las columnas \texttt{X1} y \texttt{X14} del dataset de Estados Unidos. Es la capacidad de la empresa para pagar sus deudas a corto plazo con sus activos corrientes.
     \item \texttt{Retained Earnings to Total Assets}: división entre las columnas \texttt{X15} y \texttt{X10} del dataset de Estados Unidos. Mide el apalancamiento histórico y la capacidad de reinversión acumulada.
     \item \texttt{Operating Gross Margin}: división entre las columnas \texttt{X13} y \texttt{X9} del dataset de Estados Unidos. Representa el margen bruto operativo.
-    \item \texttt{Net worth/Assets}: Patrimonio neto sobre activos. Se calcula mediante la fórmula \texttt{(X10 - X17) / X10}.
-    \item \texttt{Quick Ratio}: Se calcula mediante la fórmula \texttt{(X1 - X5) / X14}. Es la capacidad de pago inmediato.
-    \item \texttt{Liability to Equity}: Consiste en la relación Deuda/Capital. Se calcula mediante la fórmula \texttt{X17 / (X10 - X17)}.
-    \item \texttt{Net Income to Stockholder's Equity}: Rentabilidad sobre Capital. Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}.
-    \item \texttt{Current Liability to Assets}: Pasivo circulante sobre activos. Se obtiene al dividir las columnas \texttt{X14} y \texttt{X10} del dataset de Estados Unidos.
-    \item \texttt{ROA(C) before interest and ...}: Rentabilidad operativa. Se obtiene al dividir las columnas \texttt{X4} y \texttt{X10}.
-    \item \texttt{Working Capital to Total Assets}: Capital de trabajo sobre activos. Se calcula mediante la fórmula \texttt{(X1 - X14) / X10}.
+    \item \texttt{Net worth/Assets}: patrimonio neto sobre activos. Se calcula mediante la fórmula \texttt{(X10 - X17) / X10}.
+    \item \texttt{Quick Ratio}: se calcula mediante la fórmula \texttt{(X1 - X5) / X14}. Es la capacidad de pago inmediato.
+    \item \texttt{Liability to Equity}: consiste en la relación deuda/capital. Se calcula mediante la fórmula \texttt{X17 / (X10 - X17)}.
+    % \item \texttt{Net Income to Stockholder's Equity}: rentabilidad sobre capital. Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}.
+    \item \texttt{Net Income to Stockholder's Equity}: Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}. Representa la rentabilidad sobre capital.
+    \item \texttt{Current Liability to Assets}: pasivo circulante sobre activos. Se obtiene al dividir las columnas \texttt{X14} y \texttt{X10} del dataset de Estados Unidos.
+    \item \texttt{ROA(C) before interest and ...}: rentabilidad operativa. Se obtiene al dividir las columnas \texttt{X4} y \texttt{X10}.
+    \item \texttt{Working Capital to Total Assets}: capital de trabajo sobre activos. Se calcula mediante la fórmula \texttt{(X1 - X14) / X10}.
 \end{itemize}
 
 La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}. Los resultados se muestran en la tabla \ref{tab:evaluacion-dataset-usa}.
@@ -433,7 +434,7 @@ La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}. L
 	\label{tab:evaluacion-dataset-usa}
 \end{table}
 
-Similar al caso del dataset polaco \ref{subsec:dataset_polaco}, se obtienen métricas muy bajas. Se tiene un AUC-ROC de $0,4999$, que indica un comportamiento similar a un modelo aleatorio. Si bien el \textit{recall} es un valor muy alto ($0,9941$), si se analiza la \textit{precision} ($0,0667$), se concluye que el modelo clasifica a la mayoría de los casos como quiebra, independientemente de que lo sean o no.
+Similar al caso del dataset polaco que se detalla en la sección \ref{subsec:dataset_polaco}, se obtuvieron métricas muy bajas. Se tiene un AUC-ROC de $0,4999$, que indica un comportamiento similar a un modelo aleatorio. Si bien el \textit{recall} es un valor muy alto ($0,9941$), si se analiza la \textit{precision} ($0,0667$), se concluye que el modelo clasifica a la mayoría de los casos como quiebra, independientemente de que lo sean o no.
 
 Esta baja performance puede deberse a:
  \begin{itemize}

@@ -126,7 +126,7 @@ En este trabajo, se implementan los siguientes modelos de \textit{machine learni
 
 Los modelos de \textit{machine learning} se caracterizan por tener hiperparámetros: variables de configuración que se definen antes de comenzar el entrenamiento. Estas se diferencian de un parámetro ya que controlan como se comporta el algoritmo.
 
-A partir de esto, surge la necesidad de optimizar estos hiperparámetros con el fin de encontrar un equilibrio óptimo entre sesgo y varianza, lo cual a su vez permite evitar el sobreajuste (\textit{overfitting}) o subajuste (\textit{underfitting} del modelo.
+A partir de esto, surge la necesidad de optimizar estos hiperparámetros con el fin de encontrar un equilibrio óptimo entre sesgo y varianza, lo cual a su vez permite evitar el sobreajuste (\textit{overfitting}) o subajuste (\textit{underfitting}) del modelo.
 
 En este trabajo se utiliza el \textit{framework} optuna \citep{WEBSITE:optuna}: una biblioteca de código abierto basada en python. Esta utiliza una optimización bayesiana para, en lugar de probar valores al azar, aprender de intentos anteriores y enfocarse en las combinaciones de hiperparámetros más prometedoras, encontrando así las más óptimas.
 
@@ -149,17 +149,17 @@ Estos \textit{workflows} se organizan mediante DAGs \citep{WEBSITE:definicion_da
 %----------------------------------------------------------------------------------------
 \section{Desarrollo de API y herramientas para su consumo}
 
-En este trabajo se presenta una herramienta web que permite realizar predicciones sobre la quiebra de una empresa. Esta consiste en un API Rest, una interfaz de programación de aplicaciones cuya arquitectura, basada en REST \citep{article:rest-api}, permite la comunicación e intercambio de datos mediante el protocolo HTTP. Esto permite que el servicio web sea escalable, ya que las distintas peticiones de clientes se pueden distribuir entre distintas instancias de un mismo servicio; y simple, ya que tiene métodos HTTP o \textit{endpoints} para operaciones como predicción, recuperación de datos, etc.; 
+En este trabajo se presenta una herramienta web que permite realizar predicciones sobre la quiebra de una empresa. Esta consiste en un API Rest, una interfaz de programación de aplicaciones cuya arquitectura, basada en REST \citep{article:rest-api}, permite la comunicación e intercambio de datos mediante el protocolo HTTP. Esto permite que el servicio web sea escalable, ya que las distintas peticiones de clientes se pueden distribuir entre distintas instancias de un mismo servicio; y simple, ya que tiene métodos HTTP o \textit{endpoints} para operaciones como predicción, recuperación de datos, etc. 
 
 Para desarrollarlo, se usa el framework FastAPI \citep{WEBSITE:fastapi}, el cual permite programar las API utilizando código python, brindando simplicidades tales como la documentación automática, el soporte de métodos asincrónicos, validación automática de datos de entrada, entre otras.
 
-Para validar el correcto funcionamiento de esta API se utilizan herramientas como curl \citep{WEBSITE:curl} y postman \citep{WEBSITE:postman}, las cuales permiten realizar peticiones web a los distintos \textit{endpoints} disponibles, tanto de manera manual como automática.
+Para validar el correcto funcionamiento de esta API se utilizan herramientas como curl \citep{WEBSITE:curl} y postman \citep{WEBSITE:postman}, las que permiten realizar peticiones web a los distintos \textit{endpoints} disponibles, tanto de manera manual como automática.
 
 %----------------------------------------------------------------------------------------
 \section{Uso de contenedores}
 
 Las distintas herramientas mencionadas se pueden utilizar de diferentes maneras. Una de estas es mediante el uso de contenedores.
 
-Un contenedor o \textit{container} es una unidad de software que empaqueta a una aplicación y a todas sus dependencias a fin de que se ejecute de forma rápida en cualquier entorno. Es decir, permite que un software sea portable, ya que se puede utiliar tanto de manera local como en la nube; aislado, ya que varias aplicaciones se pueden ejecutar en el mismo entorno sin afectarse entre sí; y fácil de desplegar.
+Un contenedor o \textit{container} es una unidad de software que empaqueta a una aplicación y a todas sus dependencias a fin de que se ejecute de forma rápida en cualquier entorno. Es decir, permite que un software sea portable, ya que se puede utiliar tanto de manera local como en la nube; aislado, ya que las aplicaciones no se afectan entre sí; y fácil de desplegar.
 
-El uso de contenedores en este trabajo se usan contenedores mediante la herramienta Docker \citep{WEBSITE:docker}.
+En este trabajo se usa la herramienta Docker \citep{WEBSITE:docker} para trabajar con contenedores.

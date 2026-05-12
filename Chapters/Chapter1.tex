@@ -46,9 +46,27 @@ Es por esto que la predicción de quiebra de una empresa resulta fundamental par
 
 Existen diversos estudios, técnicas, mecanismos e incluso soluciones de software que permiten predecir la quiebra de empresas.
 
-Hay estudios que buscan encontrar soluciones generales a esta problemática. Por ejemplo, la fórmula matemática \textit{z-score} de Altman \citep{article:altman-z-score} utiliza cinco ratios financieros para obtener la probabilidad de que una empresa quiebre en los próximos dos años. Otras soluciones más modernas, como la propuesta en el paper \textit{Bankruptcy Prediction Using Machine Learning and Data Preprocessing Techniques} \citep{article:bankruptcy-prediction-ml-data-preprocessing}, proponen el uso de modelos de \textit{machine learning} y técnicas de preprocesamiento de datos para solucionar este problema.
+Hay estudios que buscan encontrar soluciones generales a esta problemática. Por ejemplo, la fórmula matemática \textit{z-score} de Altman \citep{article:altman-z-score} utiliza cinco ratios financieros (ver tabla \ref{tab:z-score}) para obtener la probabilidad de que una empresa quiebre en los próximos dos años. Otras soluciones más modernas, como la propuesta en el paper \textit{Bankruptcy Prediction Using Machine Learning and Data Preprocessing Techniques} \citep{article:bankruptcy-prediction-ml-data-preprocessing}, proponen el uso de modelos de \textit{machine learning} y técnicas de preprocesamiento de datos para solucionar este problema.
 
-Otros estudios se basan en el análisis de un dataset en particular. Por ejemplo, para el dataset de \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572} hay estudios como \textit{Comprehensive Evaluation of Bankruptcy Prediction in Taiwanese Firms Using Multiple Machine Learning Models}, en donde se exploran distintos modelos de \textit{machine learning}; mientras que en otros, como en \textit{Undersampling bankruptcy prediction: Taiwan bankruptcy data} \citep{10.1371/journal.pone.0254030}, se estudian los resultados de aplicar ciertas técnicas de preprocesamiento sobre el dataset, más precisamente, técnicas de \textit{undersampling}.
+\begin{table}[H]
+	\centering
+	\caption[Ratios financieros de z-score]{Ratios financieros de z-score.}
+	\begin{tabularx}{\textwidth}{X X}
+		\toprule
+		\textbf{Ratio} 	 & \textbf{Descripción} \\
+		\midrule
+        \(X_{1}\) (Capital de Trabajo / Activos Totales) &  Liquidez neta en relación con el tamaño de la firma. \\
+        \(X_{2}\) (Utilidades Retenidas / Activos Totales) & Refleja la rentabilidad acumulada y la edad de la empresa. \\
+        \(X_{3}\) (EBIT / Activos Totales) & Mide la eficiencia operativa real de los activos, independientemente de impuestos o apalancamiento. \\
+        \(X_{4}\) (Valor de Mercado del Patrimonio / Deuda Total) & Evalúa la solvencia añadiendo una dimensión de mercado (precio de la acción). \\
+        \(X_{5}\) (Ventas / Activos Totales) & Muestra la capacidad de los activos para generar ingresos. \\
+		\bottomrule
+		\hline
+	\end{tabularx}
+	\label{tab:z-score}
+\end{table}
+
+Otros estudios se basan en el análisis de un dataset en particular. Por ejemplo, para el dataset de \textit{Taiwanese Bankruptcy Prediction} \citep{taiwanese_bankruptcy_prediction_572} hay estudios como \textit{Comprehensive Evaluation of Bankruptcy Prediction in Taiwanese Firms Using Multiple Machine Learning Models}, en que se exploran distintos modelos de \textit{machine learning}; mientras que en otros, como en \textit{Undersampling bankruptcy prediction: Taiwan bankruptcy data} \citep{10.1371/journal.pone.0254030}, se estudian los resultados de aplicar ciertas técnicas de preprocesamiento sobre el dataset, más precisamente, técnicas de \textit{undersampling}.
 
 En cuanto a soluciones de software, existen herramientas como Gini Machine \citep{WEBSITE:gini-machine}, una plataforma de análisis predictivo basada en aprendizaje automático, y diseñada bajo el enfoque \textit{no-code}.
 
@@ -83,7 +101,7 @@ Para lograr este objetivo, se definió el siguiente alcance:
     \item Implementar modelos de \textit{machine learning}: es necesario implementar técnicas robustas, tales como SVM \citep{model:svm}, logistic regression \citep{model:lr} y XGBoost \citep{model:xgboost}, que permitan realizar tareas de clasificación. De esta manera, se presentan resultados de calidad al usuario.
     \item Optimizar hiperparámetros de modelos de \textit{machine learning}: es fundamental refinar detalles relacionados a la configuración de los modelos empleados, a fin que la calidad de los resultados sean superiores.
     \item Obtener métricas y gráficos de cada modelo: estos les otorgan información extra a los usuarios respecto al contexto de sus predicciones.
-    \item Comparar modelos y seleccionar el más optimo: es fundamental que el sistema le permita al usuario final realizar predicciones mediante el mejor modelo posible. Por ello, se comparan los distintos modelos entrenados y optimizados, a fin de encontrar al mejor de ellos.
+    \item Comparar modelos y seleccionar el óptimo: es fundamental que el sistema le permita al usuario final realizar predicciones mediante el mejor modelo posible. Por ello, se comparan los distintos modelos entrenados y optimizados, a fin de encontrar al mejor de ellos.
     \item Seguimiento de resultados: al entrenar y comparar distintos modelos, es necesario hacer un seguimiento y una persistencia de ellos, como así también de sus métricas y gráficos. Esto facilita la consulta de esta información en distintas etapas, como así también su disposición para las consultas de los usuarios.
     \item Automatizar etapas: es de suma importancia que las etapas de análisis, optimización, entrenamiento y seguimiento de modelos sean automatizadas. Esto agiliza el ciclo de vida de la aplicación, permitiendo que las mejoras aplicadas al sistema sean publicadas de forma rápida y sencilla para el consumo de los usuarios.
     \item Crear un servicio web: mediante una API web, un usuario puede realizar predicciones de quiebra al proveer los datos de una empresa en particular. También puede consultar métricas y gráficas de los modelos involucrados, incluyendo al mejor de ellos.
