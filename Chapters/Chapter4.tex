@@ -2,7 +2,7 @@
 
 \label{Chapter4}
 
-En este capítulo se comienza detallando cómo se evalúan los modelos estudiados en este trabajo. Luego, se explica cómo se evalúa el entorno de Airflow, haciendo énfasis en los dos DAGs implementados. Posteriormente, se detallan las pruebas realizadas en el servicio web, detallando cada uno de sus \textit{endpoints}. Finalmente, se detalla una prueba realizada con otro dataset.
+En este capítulo se detalla, en primer lugar, cómo se evalúan los modelos estudiados en este trabajo. Luego, se explica cómo se evalúa el entorno de Airflow, con énfasis en los dos DAGs implementados. Posteriormente, se describen las pruebas realizadas en el servicio web y se presentan cada uno de sus \textit{endpoints}. Finalmente, se detalla una prueba realizada con otro dataset.
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -84,7 +84,7 @@ En la sección \ref{sec:automatizacion_airflow} se explica cómo se automatizan 
 
 \subsection{DAG \texttt{download and split dataset}}
 
-El primer DAG \citep{WEBSITE:airflow_dags} que se ejecuta es \texttt{download and split dataset}. Este se compone de dos tareas: \texttt{download\_dataset\_to\_s3}, que se encarga de descargar el dataset original y guardarlo en S3 (más precisamente, en minio), y la tarea \texttt{split\_raw\_dataset\_and\_store\_to\_s3}, que se encarga de hacer la división en \textit{train} y \textit{test}, y guardar los resultados en S3/minio.
+El primer DAG \citep{WEBSITE:airflow_dags} que se ejecuta es \texttt{download and split dataset}. Este se compone de dos tareas: \texttt{download\_dataset\_to\_s3}, que se encarga de descargar el dataset original y guardarlo en S3 (más precisamente en minio), y la tarea \texttt{split\_raw\_dataset\_and\_store\_to\_s3}, que se encarga de hacer la división en \textit{train} y \textit{test}, y guardar los resultados en S3/minio.
 
 Entonces, para validar que se ejecuta correctamente se deben revisar los \textit{logs} de Airflow y revisar que los datasets estén siendo guardados en S3/minio.
 
@@ -201,7 +201,7 @@ El \textit{endpoint} \texttt{get\_champion\_metrics} permite obtener las métric
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.70\textwidth]{./Figures/champion_metrics.png}
-	\caption{Champion - metrics}
+	\caption{Champion - metrics.}
 	\label{fig:champion_metrics}
 \end{figure}
 
@@ -225,7 +225,7 @@ El \textit{endpoint} \texttt{get\_experiment\_metrics} permite obtener métricas
     \item \texttt{experiment/<experiment>/metrics}
 \end{itemize}
 
-La misma tiene un solo parámetro: \texttt{<experiment>}. Este acepta únicamente los valores \texttt{logistic\_regression}, \texttt{svm} y \texttt{xgboost}.
+Esta tiene un solo parámetro: \texttt{<experiment>}. Este acepta únicamente los valores \texttt{logistic\_regression}, \texttt{svm} y \texttt{xgboost}.
 
 La manera de evaluar este \textit{endpoint} es similar a la de \texttt{get\_champion\_metrics}, detallada en la sección \ref{sec:eval_get_champion_metrics}. La única diferencia es que ahora se debe indicar a qué experimento se desea consultar. Si el experimento indicado es correcto, se verá un resultado similar al de la sección \ref{sec:eval_get_champion_metrics}. En caso contrario, se muestra un mensaje de error, en que se indica que el parámetro ingresado es erróneo, y se listan los valores posibles a utilizar.
 
@@ -238,7 +238,7 @@ A partir de esta información, se devuelve un mensaje que indica si la empresa e
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.95\textwidth]{./Figures/predict.png}
-	\caption{Endpoint \texttt{predict}}
+	\caption{Endpoint \texttt{predict}.}
 	\label{fig:predict}
 \end{figure}
 
@@ -349,7 +349,7 @@ De manera similar al dataset polaco (ver sección \ref{subsec:dataset_polaco}), 
 \begin{itemize}
     \item \texttt{ROA(C) before interest}: división entre las columnas \texttt{line\_2400} y \texttt{line\_1600} del dataset ruso. Representa la utilidad neta sobre el activo total.
     \item \texttt{Current Ratio}: división entre las columnas \texttt{line\_1200} y \texttt{line\_1500} del dataset ruso. Representa la capacidad de pago a corto plazo.
-    \item \texttt{Quick Ratio}: Representa la liquidez inmediata. Se calcula mediante la fórmula ${(\texttt{line\_1200} - \texttt{line\_1210}) / \texttt{line\_1500}}$.
+    \item \texttt{Quick Ratio}: representa la liquidez inmediata. Se calcula mediante la fórmula ${(\texttt{line\_1200} - \texttt{line\_1210}) / \texttt{line\_1500}}$.
     \item \texttt{Net worth/Assets}: división de las columnas \texttt{line\_1300} y \texttt{line\_1600} del dataset ruso. Es la proporción de capital propio en la empresa.
     \item \texttt{Debt ratio \%}: división entre las columnas \texttt{line\_1500} y \texttt{line\_1600} del dataset ruso. Consiste en el nivel de apalancamiento.
     \item \texttt{Inventory Turnover Rate}: división entre las columnas \texttt{line\_2120} y \texttt{line\_1210} del dataset ruso. Consiste en la eficiencia en la rotación de mercancía.
@@ -389,7 +389,7 @@ La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, d
 
 En este caso se obtuvieron mejores métricas que con el dataset de Polonia. Algunas de estas son incluso mejores que la del dataset original. La métrica AURC-ROC, con valor de $0,8773$, es mucho mejor que el caso del dataset polaco ($0,5096$, que indica un comportamiento azaroso), pero menor a la del dataset de Taiwán ($0,9210$). El \textit{recall} es $1$, pero a diferencia del dataset polaco, la métrica de \textit{precision} es de $0,2993$. Esto indica que el modelo genera muchos falsos positivos. Por ejemplo, de $10$ casos clasificados como quiebra, solo $3$ serán correctos. Por su parte, la métrica AUPRC ($0,6422$) es mejor que las obtenidas en el dataset de Polonia ($0,0429$) y de Taiwán ($0,3259$). Esto indica que el modelo mantiene una buena relación entre \textit{precision} y \textit{recall}.
 
-Se puede decir que el modelo entrenado con el dataset de Taiwán puede detectar quiebras asociadas al mercado ruso, pero es sensible a clasificar erróneamente a empresas sanas. Esta impresición puede deberse al formato del dataset ruso, que solamente tiene $11$ columnas equivalentes con el dataset de Taiwán. De manera similar al caso Polonia, pueden haber también diferentes legislaciones y/o definiciones que inciden en la definición de una quiebra.
+Se puede decir que el modelo entrenado con el dataset de Taiwán puede detectar quiebras asociadas al mercado ruso, pero es sensible a clasificar erróneamente a empresas sanas. Esta imprecisión puede deberse al formato del dataset ruso, que solamente tiene $11$ columnas equivalentes con el dataset de Taiwán. De manera similar al caso Polonia, pueden haber también diferentes legislaciones y/o definiciones que inciden en la definición de una quiebra.
 
 \subsection{Dataset de Estados Unidos}
 \label{subsec:dataset_usa}
@@ -407,7 +407,7 @@ Se utiliza el dataset de \textit{Bankruptcy prediction dataset for american comp
     \item \texttt{Quick Ratio}: se calcula mediante la fórmula \texttt{(X1 - X5) / X14}. Es la capacidad de pago inmediato.
     \item \texttt{Liability to Equity}: consiste en la relación deuda/capital. Se calcula mediante la fórmula \texttt{X17 / (X10 - X17)}.
     % \item \texttt{Net Income to Stockholder's Equity}: rentabilidad sobre capital. Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}.
-    \item \texttt{Net Income to Stockholder's Equity}: Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}. Representa la rentabilidad sobre capital.
+    \item \texttt{Net Income to Stockholder's Equity}: se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}. Representa la rentabilidad sobre capital.
     \item \texttt{Current Liability to Assets}: pasivo circulante sobre activos. Se obtiene al dividir las columnas \texttt{X14} y \texttt{X10} del dataset de Estados Unidos.
     \item \texttt{ROA(C) before interest and ...}: rentabilidad operativa. Se obtiene al dividir las columnas \texttt{X4} y \texttt{X10}.
     \item \texttt{Working Capital to Total Assets}: capital de trabajo sobre activos. Se calcula mediante la fórmula \texttt{(X1 - X14) / X10}.

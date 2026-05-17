@@ -2,9 +2,9 @@
 
 \label{Chapter2}
 
-En este capítulo se comienza detallando las técnicas de procesamiento de datos utilizadas en el trabajo.
+En este capítulo se detallan, en primer lugar, las técnicas de procesamiento de datos utilizadas en el trabajo.
 Luego, se describen los modelos de \textit{machine learning} entrenados.
-Posteriormente, se describen las distintas herramientas utilizadas para hacer seguimiento de modelos, para automatizar el procesamiento de datos y entrenamiento de modelos, como así también de aquellas empleadas en el desarrollo de APIs y contenedores.
+Posteriormente, se presentan las distintas herramientas utilizadas para hacer seguimiento de modelos, para automatizar el procesamiento de datos y entrenamiento de modelos, como así también de aquellas empleadas en el desarrollo de APIs y contenedores.
 
 %----------------------------------------------------------------------------------------
 \section{Técnicas de procesamiento de datos}
@@ -88,21 +88,21 @@ En particular, se utiliza la técnica de \textit{Standard Scaler} \citep{WEBSITE
 \subsection{Balanceo de dataset}
 \label{subsec:tecnicas_balanceo}
 
-Al trabajar con problemas de clasificación, los datasets implementados tienen una columna \textit{target} u objetivo, la cual describe a una clase a la cual pertenece cada registro. Una de las particularidades que se pueden presentar es la del desbalance: una clase tiene una cantidad mucho mayor de casos que el resto. Estas se conocen como clases dominantes, y su presencia puede afectar el rendimiento de modelos de \textit{machine learning} al hacer que estos ignoren a las clases minoritarias.
+Al trabajar con problemas de clasificación, los datasets implementados tienen una columna \textit{target} u objetivo que describe a una clase a la que pertenece cada registro. Una de las particularidades que se pueden presentar es la del desbalance: una clase tiene una cantidad mucho mayor de casos que el resto. Estas se conocen como clases dominantes, y su presencia puede afectar el rendimiento de modelos de \textit{machine learning} al hacer que estos ignoren a las clases minoritarias.
 
 Para solucionar este problema, se utilizan técnicas de sobremuestreo u \textit{oversampling}, las cuales agregan registros extras al dataset con el fin de tener un dataset balanceado.
 
 En este trabajo se utilizan las siguientes técnicas:
 \begin{itemize}
     \item SMOTE \citep{article:smote}: permite generar ejemplos sintéticos en función de un caso de la clase minoritaria y sus vecinos más cercanos.
-    \item ADASYN \citep{article:adasyn}: consiste en una evolución de SMOTE, la cual genera datos sintéticos en áreas donde la densidad de la clase minoritaria es baja y está rodeada de la clase mayoritaria.
-    \item SMOTE-ENN \citep{article:smoteenn}: consiste en una técnicas que comienza aplicando SMOTE, para luego eliminar ejemplos de clases que difieran de sus vecinos mediante ENN (\textit{Edited Nearest Neighbors}).
+    \item ADASYN \citep{article:adasyn}: consiste en una evolución de SMOTE que genera datos sintéticos en áreas donde la densidad de la clase minoritaria es baja y está rodeada de la clase mayoritaria.
+    \item SMOTE-ENN \citep{article:smoteenn}: consiste en una técnica que comienza con la aplicación de SMOTE y luego elimina ejemplos de clases que difieran de sus vecinos mediante ENN (\textit{Edited Nearest Neighbors}).
 \end{itemize}
 
 \subsection{Selección de features}
 \label{subsec:seleccion_features}
 
-Otra particularidad de los datasets utilizados en este tipo de trabajo es la cantidad de variables presentes. Estos valores suelen ser muy variados, ya que hay datasets con menos de 10 variables (como el iris dataset \citep{WEBSITE:iris-dataset}, que tiene 6 columnas), mientras que otros pueden tener 100 y más columnas.
+Otra particularidad de los datasets utilizados en este tipo de trabajo es la cantidad de variables presentes. Estos valores suelen ser muy variados, ya que hay datasets con menos de 10 variables (como el \texttt{iris dataset} \citep{WEBSITE:iris-dataset}, que tiene 6 columnas), mientras que otros pueden tener 100 y más columnas.
 
 Para estos últimos casos resulta conveniente aplicar técnicas de selección de características o \textit{features}. Estas nos permiten filtrar algunas columnas con el fin de quedarse con las más importantes. De esta manera, se elimina cierto ruido de datos pocos relevantes, como así también se reduce el sobreajuste (u \textit{overfitting}) al entrenar modelos.
 
@@ -111,7 +111,7 @@ En particular, en este trabajo se hace uso de la técnica de información mutua 
 %----------------------------------------------------------------------------------------
 \section{Modelos de inteligencia artificial}
 
-En los trabajos de clasificación mediante datasets, los primeros pasos y tareas suelen dedicarse a la preparación del dataset, utilizando técnicas como las mencionadas anteriormente. Una vez preparado, los datasets son utilizados como entrada de distintos algoritmos de \textit{machine learning} con el fin de obtener un modelo. Estos modelos posteriormente nos permiten realizar predicciones o clasificaciones a partir de datos particulares de entrada.
+En los trabajos de clasificación mediante datasets, los primeros pasos y tareas suelen dedicarse a la preparación del dataset, utilizando técnicas como las mencionadas anteriormente. Una vez preparado, los datasets son utilizados como entrada de distintos algoritmos de \textit{machine learning} con el fin de obtener un modelo. Estos modelos posteriormente permiten realizar predicciones o clasificaciones a partir de datos particulares de entrada.
 
 En este trabajo, se implementan los siguientes modelos de \textit{machine learning}:
 
@@ -124,42 +124,42 @@ En este trabajo, se implementan los siguientes modelos de \textit{machine learni
 %----------------------------------------------------------------------------------------
 \section{Optimización de hiperparámetros}
 
-Los modelos de \textit{machine learning} se caracterizan por tener hiperparámetros: variables de configuración que se definen antes de comenzar el entrenamiento. Estas se diferencian de un parámetro ya que controlan como se comporta el algoritmo.
+Los modelos de \textit{machine learning} se caracterizan por tener hiperparámetros: variables de configuración que se definen antes de comenzar el entrenamiento. Estas se diferencian de un parámetro ya que controlan cómo se comporta el algoritmo.
 
-A partir de esto, surge la necesidad de optimizar estos hiperparámetros con el fin de encontrar un equilibrio óptimo entre sesgo y varianza, lo cual a su vez permite evitar el sobreajuste (\textit{overfitting}) o subajuste (\textit{underfitting}) del modelo.
+A partir de esto, surge la necesidad de optimizar estos hiperparámetros con el fin de encontrar un equilibrio óptimo entre sesgo y varianza, lo que a su vez permite evitar el sobreajuste (\textit{overfitting}) o subajuste (\textit{underfitting}) del modelo.
 
-En este trabajo se utiliza el \textit{framework} optuna \citep{WEBSITE:optuna}: una biblioteca de código abierto basada en python. Esta utiliza una optimización bayesiana para, en lugar de probar valores al azar, aprender de intentos anteriores y enfocarse en las combinaciones de hiperparámetros más prometedoras, encontrando así las más óptimas.
+En este contexto se utiliza el \textit{framework} optuna \citep{WEBSITE:optuna}: una biblioteca de código abierto basada en Python. Esta utiliza una optimización bayesiana para, en lugar de probar valores al azar, aprender de intentos anteriores y enfocarse en las combinaciones de hiperparámetros más prometedoras, para encontrar así las más óptimas.
 
 %----------------------------------------------------------------------------------------
 \section{Herramientas - Tracking server}
 
-Al trabajar con distintos modelos de \textit{machine learning} resulta crucial hacer un seguimiento de los mismos, enfocándose en los datos o datasets de entrada utilizados, los hiperparámetros configurados, las métricas y gráficos obtenidas luego del entrenamiento, entre otras cosas.
+Al trabajar con distintos modelos de \textit{machine learning} resulta crucial hacer un seguimiento de estos, enfocándose en los datos o datasets de entrada utilizados, los hiperparámetros configurados, las métricas y gráficos obtenidas luego del entrenamiento, entre otras cosas.
 
-En este trabajo se utiliza MLFlow \citep{WEBSITE:mlflow}, una herramienta de código abierto que nos permite hacer este seguimiento y registro de configuraciones, a fin de utilizar tanto estos valores como los modelos en otras etapas del trabajo.
+En este trabajo se utiliza MLFlow \citep{WEBSITE:mlflow}, una herramienta de código abierto que permite hacer un correcto seguimiento y registro de configuraciones, a fin de utilizar tanto estos valores como los modelos en otras etapas del trabajo.
 
 %----------------------------------------------------------------------------------------
 \section{Herramientas para automatización}
 
-Este trabajo consta de distintas etapas, tales como el preprocesamiento de dataset, entrenamiento de modelos, optimización de hiperparámetros, obtención de métricas, entre otras.
+La solución desarrollada consta de distintas etapas, tales como el preprocesamiento de dataset, entrenamiento de modelos, optimización de hiperparámetros, obtención de métricas, entre otras.
 
-El trabajo realizada en ellas se automatiza mediante la herramienta de código abierto Airflow \citep{WEBSITE:airflow}, la cual nos permite programar, automatizar y monitorear los flujos de trabajo o \textit{workflows} mencionados.
+Las tareas asociadas a estas etapas se automatizan mediante la herramienta de código abierto Airflow \citep{WEBSITE:airflow}, la que permite programar, automatizar y monitorear los flujos de trabajo o \textit{workflows} mencionados.
 
-Estos \textit{workflows} se organizan mediante DAGs \citep{WEBSITE:definicion_dags}, o grafo acíclico dirigido por sus siglas en inglés, los cuales siguen un orden lógico (secuencial o en paralelo) sin bucles para lograr un objetivo. De esta forma, se pueden orquestar tareas y escalar procesos de manera automática.
+Estos \textit{workflows} se organizan mediante DAGs \citep{WEBSITE:definicion_dags}, o grafo acíclico dirigido por sus siglas en inglés, cuya estructura establece un orden lógico de ejecución, secuencial o paralelo, sin bucles para lograr un objetivo. De esta forma, se pueden orquestar tareas y escalar procesos de manera automática.
 
 %----------------------------------------------------------------------------------------
 \section{Desarrollo de API y herramientas para su consumo}
 
-En este trabajo se presenta una herramienta web que permite realizar predicciones sobre la quiebra de una empresa. Esta consiste en un API Rest, una interfaz de programación de aplicaciones cuya arquitectura, basada en REST \citep{article:rest-api}, permite la comunicación e intercambio de datos mediante el protocolo HTTP. Esto permite que el servicio web sea escalable, ya que las distintas peticiones de clientes se pueden distribuir entre distintas instancias de un mismo servicio; y simple, ya que tiene métodos HTTP o \textit{endpoints} para operaciones como predicción, recuperación de datos, etc. 
+En este trabajo se presenta una herramienta web que permite realizar predicciones sobre la quiebra de una empresa. Esta consiste en un API Rest, una interfaz de programación de aplicaciones cuya arquitectura, basada en REST \citep{article:rest-api}, permite la comunicación e intercambio de datos mediante el protocolo HTTP. Esto favorece la escalabilidad del servicio, ya que las distintas peticiones de clientes se pueden distribuir entre múltiples instancias, y también su simplicidad, dado que dispone de métodos HTTP o \textit{endpoints} para operaciones como predicción, recuperación de datos, entre otras. 
 
-Para desarrollarlo, se usa el framework FastAPI \citep{WEBSITE:fastapi}, el cual permite programar las API utilizando código python, brindando simplicidades tales como la documentación automática, el soporte de métodos asincrónicos, validación automática de datos de entrada, entre otras.
+Para desarrollarlo, se usa el framework FastAPI \citep{WEBSITE:fastapi}, que permite programar las API mediante código Python y ofrece simplicidades tales como la documentación automática, el soporte de métodos asincrónicos, validación automática de datos de entrada, entre otras.
 
-Para validar el correcto funcionamiento de esta API se utilizan herramientas como curl \citep{WEBSITE:curl} y postman \citep{WEBSITE:postman}, las que permiten realizar peticiones web a los distintos \textit{endpoints} disponibles, tanto de manera manual como automática.
+Para validar el correcto funcionamiento de esta API se utilizan herramientas como cURL \citep{WEBSITE:curl} y Postman \citep{WEBSITE:postman}, que permiten realizar peticiones web a los distintos \textit{endpoints} disponibles, tanto de manera manual como automática.
 
 %----------------------------------------------------------------------------------------
 \section{Uso de contenedores}
 
 Las distintas herramientas mencionadas se pueden utilizar de diferentes maneras. Una de estas es mediante el uso de contenedores.
 
-Un contenedor o \textit{container} es una unidad de software que empaqueta a una aplicación y a todas sus dependencias a fin de que se ejecute de forma rápida en cualquier entorno. Es decir, permite que un software sea portable, ya que se puede utiliar tanto de manera local como en la nube; aislado, ya que las aplicaciones no se afectan entre sí; y fácil de desplegar.
+Un contenedor o \textit{container} es una unidad de software que empaqueta a una aplicación y a todas sus dependencias a fin de que se ejecute de forma rápida en cualquier entorno. Es decir, permite que un software sea portable, aislado y fácil de desplegar, ya que puede ejecutarse tanto de manera local como en la nube, evita que las aplicaciones se afecten entre sí y simplifica su implementación
 
 En este trabajo se usa la herramienta Docker \citep{WEBSITE:docker} para trabajar con contenedores.
