@@ -40,7 +40,7 @@ Debido a la gran cantidad de versiones de modelos creados, surge la necesidad de
     \label{tab:metricas-de-modelos}
 \end{table}
 
-En la tabla \ref{tab:resultados-metricas} se muestran las métricas obtenidas para los modelos Logistic Regression, SVM y XGBoost, tanto de sus versiones individuales como aquellas basadas en \textit{pipelines}. En esta se observa que los resultados obtenidos en las versiones correspondientes a \textit{pipelines} son, en general, superiores a las versiones individuales. Por este motivo es que se seleccionan a las versiones basadas en \textit{pipelines} para cada uno de los modelos.
+En la tabla \ref{tab:resultados-metricas} se muestran las métricas obtenidas para los modelos Logistic Regression, SVM y XGBoost, tanto de sus versiones individuales como aquellas basadas en \textit{pipelines}. En esta se observa que los resultados obtenidos en las versiones correspondientes a \textit{pipelines} son, en general, superiores a las versiones individuales. En función de los valores obtenidos de ROC-AUC, f2-Score y \textit{recall} se seleccionan a las versiones basadas en \textit{pipelines} para cada uno de los modelos.
 
 \begin{table}[H]
     \centering
@@ -63,7 +63,7 @@ En la tabla \ref{tab:resultados-metricas} se muestran las métricas obtenidas pa
 
 \subsection{Comparación entre modelos}
 
-Una vez obtenidas las métricas de los modelos, se procede a compararlos entre sí. Para ello, se hace uso de la métrica AUPRC o \textit{average precision}. Por este motivo, el mejor modelo es XGBoost - pipeline.
+Una vez obtenidas las métricas de los modelos, se procede a compararlos entre sí. Para ello, se hace uso de la métrica AUPRC o \textit{average precision}. Por este motivo, si se observa la tabla \ref{tab:resultados-metricas}, el mejor modelo es XGBoost - pipeline.
 
 El \textit{model registry} de MLFlow se utiliza para seleccionar el modelo correcto. En este, se registran las distintas versiones del modelo final del trabajo, cuyo nombre es \texttt{bankruptcy\_prediction}. En sus metadatos se indica qué \textit{run} o ejecución lo generó. Tal como se observa en la figura \ref{fig:best-model}, en la versión número 4 del modelo final se detalla que se genera a partir de XGBoost, lo que indica que la comparación entre modelos funciona correctamente.
 
@@ -73,6 +73,124 @@ El \textit{model registry} de MLFlow se utiliza para seleccionar el modelo corre
 	\caption{Mejor modelo - \textit{Model registry} de MLFLow.}
 	\label{fig:best-model}
 \end{figure}
+
+\subsection{Matriz de confusión normalizada del mejor modelo}
+
+La figura \ref{fig:matriz-confusion-mejor-modelo} corresponde a la matriz de confusión normalizada por fila del mejor modelo (XGBoost - pipeline). Esta permite conocer qué tan bien clasifica el modelo a los casos de quiebra como así también a los casos de empresas sanas.
+
+La matriz indica que el modelo obtiene un \textit{recall} o \textit{true positive rate} de $0,77$, es decir, que el modelo detecta de manera satisfactoria al $77\%$ de las empresas que entran en quiebra. El $23\%$ que resta se clasifica de manera errónea, es decir, el modelo indica que no entra en quiebra. Esto se ve en el valor de \textit{false negative rate}, que es de $0,23$.
+
+En lo que respecta a las empresas sanas, el modelo detecta con éxito al $91\%$, tal como lo indica el \textit{true negative rate} o \textit{specifity} de $0,91$. El $9,4\%$ de casos que restan se clasifican de manera equivocada como quiebras, lo que se refleja en el \textit{false positive rate} de $0,094$.
+
+En resumen, esta matriz describe de manera simple qué tan bien identifica el modelo a cada clase. Para el caso particular del dataset de Taiwán, la matriz indica que el modelo detecta el $79\%$ los casos de quiebra. Esta es una buena métrica, ya que el objetivo de este modelo es minimizar las quiebras no detectadas ($21\%$), debido al elevado riesgo financiero que supone un impago. Como contraparte, el modelo tiene una tasa de falsos positivos de $9,4\%$, que representan a empresas sanas marcadas como quiebra.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/fig_matriz_confusion.png}
+	\caption{Matriz de confusión del mejor modelo.}
+	\label{fig:matriz-confusion-mejor-modelo}
+\end{figure}
+
+\subsection{Curva ROC del mejor modelo}
+
+La figura \ref{fig:fig_roc_curve} muestra la curva ROC del mejor modelo. Esta grafica el \textit{recall} o \textit{true positive rate} del modelo contra el \textit{false positive rate} en distintos umbrales o \textit{thresholds}, que muestran la disyuntiva de identificar de manera correcta un caso positivo y marcar de manera errónea los negativos. El área bajo esta curva (AUC-ROC) permite determinar qué tan bien el modelo separa las clases. Un valor cercano a $1$ indica que se tiene un buen modelo, mientras que un valor cercano a $0,5$ muestra que el modelo tiene un comportamiento azaroso.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.92\textwidth]{./Figures/fig_roc_curve.png}
+	\caption{Curva ROC del mejor modelo.}
+	\label{fig:fig_roc_curve}
+\end{figure}
+
+Para el mejor modelo se tiene un AUC-ROC de $0,9236$, lo que indica que el modelo es capaz de distinguir empresas en quiebra de empresas sanas en diferentes umbrales.
+
+Igualmente, esta curva y su métrica asociada no son suficientes para evaluar la performance del modelo. Esto se debe a que la curva hace uso de la métrica de \textit{false positive rate}, cuya fórmula se observa en la ecuación \ref{eq:false_positive_rate}, donde FP es \textit{false positive} y TN \textit{true negative}.
+
+\begin{equation}
+	\label{eq:false_positive_rate}
+	FPR = \frac{FP}{FP + TN}
+\end{equation}
+
+El dataset de Taiwán tiene 6599 casos de empresas sanas o \textit{true negative}. Por lo tanto, incluso si el modelo genera cientos de falsos positivos, el valor de \textit{false positive rate} será cercano a cero, lo que hace que la curva ROC parezca excesivamente optimista.
+
+\subsection{Curva \textit{precision-recall} del mejor modelo}
+
+La curva \textit{precision-recall} \citep{WEBSITE:precision-recall-curve} es un método ideal para evaluar modelos que trabajan con datasets desbalanceados, en los que detectar la clase positiva minoritaria es crucial. Esto se debe a que, a diferencia de la curva ROC, no hace uso de la métrica de \textit{false positive rate}. Esta curva grafica distintos umbrales que muestran la disyuntiva de identificar correctamente las empresas que quiebran (\textit{recall}) y garantizar que estas predicciones sean precisas (\textit{precision}).
+
+A diferencia de la curva ROC, el \textit{baseline} o comportamiento azaroso se define como la proporción de la clase positiva en el dataset. Para el caso del dataset de Taiwán, el baseline es de $0,32$ o $3,2\%$ ($220$ quiebras entre $6819$ empresas totales). El valor del área bajo la curva \textit{precision-recall} (AUPRC) del mejor modelo es $0,3388$ o $33,88\%$, 10 veces mejor que el \textit{baseline}. A partir de estos valores se concluye que el modelo extra patrones financieros de alto valor predictivo. Igualmente, la diferencia entre las métricas AUC-ROC y AUPRC muestra que, si bien el modelo clasifica la quiebra con éxito, sus predicciones positivas contienen un elevado volumen de falsas alarmas.
+
+La figura \ref{fig:fig_precision_recall_curve} muestra la curva \textit{precision-recall} y el \textit{baseline} del mejor modelo (XGBoost - pipeline).
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.95\textwidth]{./Figures/fig_precision_recall_curve.png}
+	\caption{Curva \textit{precision-recall} del mejor modelo.}
+	\label{fig:fig_precision_recall_curve}
+\end{figure}
+
+\subsection{Variables más importantes del mejor modelo}
+
+El modelo XGBoost, que se implementa con la clase \texttt{XGBClassifier} \citep{WEBSITE:xgboost_classifier} del paquete \texttt{XGBoost} \citep{WEBSITE:package_xgboost}, tiene el atributo \texttt{feature\_importance}, que indica qué tan útil fue cada \textit{feature} a la hora de configurar el modelo. Este utiliza por defecto la métrica de \textit{gain} o ganancia \citep{model:xgboost} y mide la contribución de una \textit{feature} según cuánto reduce el error total del modelo al dividir los datos en los árboles.
+
+La tabla \ref{tab:var_importance_best_model} muestra las diez \textit{features} más importantes del modelo.
+
+% \begin{table}[h]
+% 	\centering
+% 	\caption[Variables más importantes del mejor modelo]{Variables más importantes del mejor modelo.}
+% 	\begin{tabular}{c c}
+% 		\toprule
+% 		\textbf{Feature} 	 & \textbf{Ganancia (\textit{gain})} \\
+% 		\midrule
+%         Working Capital/Equity &   0,163086 \\
+%         Net Value Per Share (C) &   0,096922\\
+%         Inventory Turnover Rate (times) &   0,069746 \\
+%         Cash Flow to Total Assets &   0,062084 \\
+%         Interest-bearing debt interest rate &   0,043152 \\
+%         Tax rate (A) &   0,040591 \\
+%         Quick Ratio &   0,029364 \\
+%         Current Liability to Assets &   0,024506 \\
+%         Net Value Per Share (B) &   0,021983 \\
+%         Total income/Total expense &   0,017151 \\
+% 		\bottomrule
+% 		\hline
+% 	\end{tabular}
+% 	\label{tab:var_importance_best_model}
+% \end{table}
+
+\begin{table}[h]
+	\centering
+	\caption[Variables más importantes del mejor modelo]{Variables más importantes del mejor modelo.}
+	% \begin{tabular}{c c c}
+    \begin{tabularx}{\textwidth}{l X c}
+		\toprule
+		\textbf{Feature} & \textbf{Descripción}	 & \textbf{Ganancia (\textit{gain})} \\
+		\midrule
+        Working Capital/Equity & Proporción del capital de trabajo financiado por los accionistas. &   0,163086 \\
+        Net Value Per Share (C) & Valor contable por acción bajo criterios estrictos de liquidación o consolidación reciente. &  0,096922\\
+        Inventory Turnover Rate (times) & Frecuencia anual con la que se vende y reemplaza el inventario. &  0,069746 \\
+        Cash Flow to Total Assets & Capacidad de los activos para generar efectivo neto. &  0,062084 \\
+        Interest-bearing debt interest rate & Costo financiero o tasa cobrada por los acreedores. &  0,043152 \\
+        Tax rate (A) &  Tasa impositiva efectiva que afecta los beneficios netos. & 0,040591 \\
+        Quick Ratio & Capacidad de pago inmediato sin liquidar inventarios corrientes. &  0,029364 \\
+        Current Liability to Assets &  Proporción de activos financiada con deuda a corto plazo. & 0,024506 \\
+        Net Value Per Share (B) & Valor en libros tradicional por acción circulante bajo principios contables estándar. &  0,021983 \\
+        Total income/Total expense & Índice de eficiencia operativa global y rentabilidad básica. &  0,017151 \\
+		\bottomrule
+		\hline
+	% \end{tabular}
+    \end{tabularx}
+	\label{tab:var_importance_best_model}
+\end{table}
+
+% En la tabla \ref{tab:var_importance_best_model} se observa que la variable que mayor ganancia acumula es \texttt{Working Capital/Equity} con un $16,3\%$. Es decir, el modelo considera que una de las principales causas de quiebra de una empresa es una mala liquidez operativa, porque si el capital de trabajo que respaldan los accionistas se agota, la firma pierde su escudo operativo básico.
+
+% La siguiente variable con mayor ganancia es \texttt{Net Value Per Share (C)}, con un valor de $9,69\%$. Esto indica que el modelo evalúa las caídas drásticas en el valor real de liquidación por acción para predecir una quiebra de una empresa.
+
+En la tabla \ref{tab:var_importance_best_model} se observa que las variables \texttt{Working Capital/Equity} y \texttt{Net Value Per Share (C)} acumulan cerca del $26\%$ de la ganancia, por lo que son las que más le permiten al modelo definir una quiebra. Es decir, el modelo considera una quiebra cuando una empresa agota el capital de trabajo operativo que respaldan sus socios y cuando su valor de liquidación por acción disminuye o incluso se desploma.
+
+Por su parte, las variables \texttt{Inventory Turnover Rate (times)}, \texttt{Cash Flow to Total Assets} y \texttt{Interest-bearing debt interest rate} acumulan cerca del $22\%$ de la ganancia del modelo. El modelo penaliza a las empresas que no rotan sus inventarios y que no generan caja real con sus activos. Esta penalización es aún mayor si las empresas deben pagar tasas altas de interés a sus acreedores.
+
+En general, las variables más importantes del modelo indican que este determina la quiebra a partir de la liquidez inmediata y la eficiencia del ciclo de efectivo de una empresa dada.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
@@ -92,7 +210,7 @@ En la figura \ref{fig:validacion_dag01} se observa la correcta ejecución del da
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.90\textwidth]{./Figures/download_and_split_dataset.png}
+	\includegraphics[width=0.95\textwidth]{./Figures/download_and_split_dataset.png}
 	\caption{Validación DAG \texttt{download and split dataset}.}
 	\label{fig:validacion_dag01}
 \end{figure}
@@ -200,7 +318,7 @@ El \textit{endpoint} \texttt{get\_champion\_metrics} permite obtener las métric
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.70\textwidth]{./Figures/champion_metrics.png}
+	\includegraphics[width=0.90\textwidth]{./Figures/champion_metrics.png}
 	\caption{Champion - metrics.}
 	\label{fig:champion_metrics}
 \end{figure}
@@ -258,186 +376,186 @@ De esta manera se comprueba que el entorno MLFlow, tanto a nivel de \textit{trac
 %----------------------------------------------------------------------------------------
 %	SECTION 6
 %----------------------------------------------------------------------------------------
-\section{Evaluación con otros dataset}
+% \section{Evaluación con otros dataset}
 
-A fin de determinar si el mejor modelo permite predecir quiebra de empresas de cualquier país, se opta por evaluarlo utilizando otros datasets.
+% A fin de determinar si el mejor modelo permite predecir quiebra de empresas de cualquier país, se opta por evaluarlo utilizando otros datasets.
 
-\subsection{Dataset polaco}
-\label{subsec:dataset_polaco}
+% \subsection{Dataset polaco}
+% \label{subsec:dataset_polaco}
 
-Se utiliza el dataset de \textit{Polish Companies Bankruptcy} \citep{dataset:polish_companies_bankruptcy_365}, que contiene información financiera de empresas polacas entre los años 2000 y 2012. La particularidad de este dataset es que tiene menos columnas que el dataset de Taiwán, ya que solo 11 son equivalentes. Estas son:
-% Estas se detallan en la tabla \ref{tab:polish-taiwan}.
+% Se utiliza el dataset de \textit{Polish Companies Bankruptcy} \citep{dataset:polish_companies_bankruptcy_365}, que contiene información financiera de empresas polacas entre los años 2000 y 2012. La particularidad de este dataset es que tiene menos columnas que el dataset de Taiwán, ya que solo 11 son equivalentes. Estas son:
+% % Estas se detallan en la tabla \ref{tab:polish-taiwan}.
 
-\begin{itemize}
-    \item \texttt{Net Income to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr1 (net profit / total assets)}.
-    \item \texttt{Total debt/Total net worth}:  su equivalente en el dataset de Polonia es \texttt{Attr2 (total liabilities / total assets)}.
-    \item \texttt{Working Capital to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr3 (working capital / total assets)}.
-    \item \texttt{Current Ratio}: la columna equivalente del dataset de Polonia es \texttt{Attr4 (current assets / short-term liabilities)}.
-    \item \texttt{Retained Earnings to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr6 (retained earnings / total assets)}.
-    \item \texttt{ROA(C) before interest...}: su equivalente en el dataset de Polonia es \texttt{Attr7 (EBIT / total assets)}.
-    \item \texttt{Revenue Per Share (Yuan ¥}: su equivalente en el dataset de Polonia es \texttt{Attr9 (sales / total assets)}.
-    \item \texttt{ROA(B) before interest and depreciation after tax}: igual a \texttt{Attr11 (gross profit / total assets)} del dataset polaco.
-    \item \texttt{Pre-tax net Interest Rate}: su equivalente en el dataset de Polonia es \texttt{Attr14 (profit on operating activities / ...)}.
-    \item \texttt{Quick Ratio}: la columna equivalente del dataset de Polonia es \texttt{Attr46 (current assets - inventory / ...)}.
-    \item \texttt{Current Liability to Assets}: su equivalente en el dataset de Polonia es \texttt{Attr51 (short-term liabilities / total assets)}.
-    \item \texttt{Total income/Total expense}: su equivalente en el dataset de Polonia es \texttt{Attr58 (total costs / total sales)}.
-\end{itemize}
+% \begin{itemize}
+%     \item \texttt{Net Income to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr1 (net profit / total assets)}.
+%     \item \texttt{Total debt/Total net worth}:  su equivalente en el dataset de Polonia es \texttt{Attr2 (total liabilities / total assets)}.
+%     \item \texttt{Working Capital to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr3 (working capital / total assets)}.
+%     \item \texttt{Current Ratio}: la columna equivalente del dataset de Polonia es \texttt{Attr4 (current assets / short-term liabilities)}.
+%     \item \texttt{Retained Earnings to Total Assets}: su equivalente en el dataset de Polonia es \texttt{Attr6 (retained earnings / total assets)}.
+%     \item \texttt{ROA(C) before interest...}: su equivalente en el dataset de Polonia es \texttt{Attr7 (EBIT / total assets)}.
+%     \item \texttt{Revenue Per Share (Yuan ¥}: su equivalente en el dataset de Polonia es \texttt{Attr9 (sales / total assets)}.
+%     \item \texttt{ROA(B) before interest and depreciation after tax}: igual a \texttt{Attr11 (gross profit / total assets)} del dataset polaco.
+%     \item \texttt{Pre-tax net Interest Rate}: su equivalente en el dataset de Polonia es \texttt{Attr14 (profit on operating activities / ...)}.
+%     \item \texttt{Quick Ratio}: la columna equivalente del dataset de Polonia es \texttt{Attr46 (current assets - inventory / ...)}.
+%     \item \texttt{Current Liability to Assets}: su equivalente en el dataset de Polonia es \texttt{Attr51 (short-term liabilities / total assets)}.
+%     \item \texttt{Total income/Total expense}: su equivalente en el dataset de Polonia es \texttt{Attr58 (total costs / total sales)}.
+% \end{itemize}
+
+% % \begin{table}[H]
+% %     \centering
+% %     \caption{Equivalencia de columnas entre datasets de Polonia y Taiwán.}
+% %     \begin{tabularx}{\textwidth}{X X}
+% % 		\toprule
+% % 		\textbf{Columna - Polonia} & \textbf{Columna - Taiwán} \\
+% % 		\midrule
+% %         \texttt{Attr1 (net profit / total assets)}			& \texttt{Net Income to Total Assets} \\
+% %         \texttt{Attr2 (total liabilities / total assets)}	& \texttt{Total debt/Total net worth} \\
+% %         \texttt{Attr3 (working capital / total assets)}		& \texttt{Working Capital to Total Assets} \\
+% %         \texttt{Attr4 (current assets / short-term liabilities)}	& \texttt{Current Ratio} \\
+% %         \texttt{Attr6 (retained earnings / total assets)}	& \texttt{Retained Earnings to Total Assets} \\
+% %         \texttt{Attr7 (EBIT / total assets)}	& \texttt{ROA(C) before interest...} \\
+% %         \texttt{Attr9 (sales / total assets)}	& \texttt{Revenue Per Share (Yuan ¥)} \\
+% %         \texttt{Attr11 (gross profit / total assets)}	& \texttt{ROA(B) before interest and depreciation after tax} \\
+% %         \texttt{Attr14 (profit on operating activities / ...)}	& \texttt{Pre-tax net Interest Rate} \\
+% %         \texttt{Attr46 (current assets - inventory / ...)}	& \texttt{Quick Ratio} \\
+% %         \texttt{Attr51 (short-term liabilities / total assets)}	& \texttt{Current Liability to Assets} \\
+% %         \texttt{Attr58 (total costs / total sales)}	& \texttt{Total income/Total expense} \\
+% % 		\bottomrule
+% % 		\hline
+% %     \end{tabularx}
+% %     \label{tab:polish-taiwan}
+% % \end{table}
+
+% En cuanto a registros, el dataset de Polonia cuenta con 7027, de los que 6756 corresponden a empresas que no entran en quiebra, mientras que los 271 restantes corresponden a empresas que sí entran en quiebra.
+
+% Para evaluar el dataset de Polonia, se realiza una conversión de nombres para que coincidan con los del dataset de Taiwán. En cuanto a las columnas faltantes, estas se dejan con valores iguales a cero, a fin de que el modelo se encargue de procesarlas. La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, dando como resultado los valores que se muestran en la tabla \ref{tab:evaluacion-dataset-polonia}.
 
 % \begin{table}[H]
-%     \centering
-%     \caption{Equivalencia de columnas entre datasets de Polonia y Taiwán.}
-%     \begin{tabularx}{\textwidth}{X X}
+% 	\centering
+% 	\caption[Evaluación del dataset de Polonia]{Evaluación del dataset de Polonia.}
+% 	\begin{tabular}{c c c}
 % 		\toprule
-% 		\textbf{Columna - Polonia} & \textbf{Columna - Taiwán} \\
+% 		\textbf{Métrica} 	 & \textbf{Dataset de Polonia} & \textbf{Dataset de Taiwán} \\
 % 		\midrule
-%         \texttt{Attr1 (net profit / total assets)}			& \texttt{Net Income to Total Assets} \\
-%         \texttt{Attr2 (total liabilities / total assets)}	& \texttt{Total debt/Total net worth} \\
-%         \texttt{Attr3 (working capital / total assets)}		& \texttt{Working Capital to Total Assets} \\
-%         \texttt{Attr4 (current assets / short-term liabilities)}	& \texttt{Current Ratio} \\
-%         \texttt{Attr6 (retained earnings / total assets)}	& \texttt{Retained Earnings to Total Assets} \\
-%         \texttt{Attr7 (EBIT / total assets)}	& \texttt{ROA(C) before interest...} \\
-%         \texttt{Attr9 (sales / total assets)}	& \texttt{Revenue Per Share (Yuan ¥)} \\
-%         \texttt{Attr11 (gross profit / total assets)}	& \texttt{ROA(B) before interest and depreciation after tax} \\
-%         \texttt{Attr14 (profit on operating activities / ...)}	& \texttt{Pre-tax net Interest Rate} \\
-%         \texttt{Attr46 (current assets - inventory / ...)}	& \texttt{Quick Ratio} \\
-%         \texttt{Attr51 (short-term liabilities / total assets)}	& \texttt{Current Liability to Assets} \\
-%         \texttt{Attr58 (total costs / total sales)}	& \texttt{Total income/Total expense} \\
+%         recall & 1 & 0,7727 \\
+%         precision & 0,0386 & 0,2227 \\
+%         f1-score & 0,0743 & 0,3457 \\
+%         f2-score & 0,1672 & 0,5172 \\
+%         AUPRC (average precision) & 0,0429 & 0,3259\\
+%         AUC-ROC & 0,5096 & 0,9210 \\
 % 		\bottomrule
 % 		\hline
-%     \end{tabularx}
-%     \label{tab:polish-taiwan}
+% 	\end{tabular}
+% 	\label{tab:evaluacion-dataset-polonia}
 % \end{table}
 
-En cuanto a registros, el dataset de Polonia cuenta con 7027, de los que 6756 corresponden a empresas que no entran en quiebra, mientras que los 271 restantes corresponden a empresas que sí entran en quiebra.
+% Los valores correspondientes al dataset de Polonia son muy bajos. El valor de AUC-ROC, $0,5096$, indica que el comportamiento del modelo con estos datos es similar a un modelo aleatorio. El \textit{recall} es de $1$, es decir, clasifica correctamente a todos los casos de quiebra, pero al analizar la \textit{precision}, cuyo valor es $0,0386$, se deduce que el modelo clasifica la mayoría de los casos como quiebra, independientemente de si lo son o no. Esta diferencia de performance puede deberse a varios motivos, tales como:
 
-Para evaluar el dataset de Polonia, se realiza una conversión de nombres para que coincidan con los del dataset de Taiwán. En cuanto a las columnas faltantes, estas se dejan con valores iguales a cero, a fin de que el modelo se encargue de procesarlas. La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, dando como resultado los valores que se muestran en la tabla \ref{tab:evaluacion-dataset-polonia}.
+% \begin{itemize}
+%     \item La información presente en cada dataset: el dataset de Polonia tiene 11 columnas, mientras que el de Taiwán tiene 95.
+%     \item A cómo se obtuvieron los valores.
+%     \item A cómo se mide la quiebra en estos países: pueden tener diferentes normas contables y legislaciones de quiebra.
+% \end{itemize}
 
-\begin{table}[H]
-	\centering
-	\caption[Evaluación del dataset de Polonia]{Evaluación del dataset de Polonia.}
-	\begin{tabular}{c c c}
-		\toprule
-		\textbf{Métrica} 	 & \textbf{Dataset de Polonia} & \textbf{Dataset de Taiwán} \\
-		\midrule
-        recall & 1 & 0,7727 \\
-        precision & 0,0386 & 0,2227 \\
-        f1-score & 0,0743 & 0,3457 \\
-        f2-score & 0,1672 & 0,5172 \\
-        AUPRC (average precision) & 0,0429 & 0,3259\\
-        AUC-ROC & 0,5096 & 0,9210 \\
-		\bottomrule
-		\hline
-	\end{tabular}
-	\label{tab:evaluacion-dataset-polonia}
-\end{table}
+% \subsection{Dataset ruso}
+% \label{subsec:dataset_ruso}
 
-Los valores correspondientes al dataset de Polonia son muy bajos. El valor de AUC-ROC, $0,5096$, indica que el comportamiento del modelo con estos datos es similar a un modelo aleatorio. El \textit{recall} es de $1$, es decir, clasifica correctamente a todos los casos de quiebra, pero al analizar la \textit{precision}, cuyo valor es $0,0386$, se deduce que el modelo clasifica la mayoría de los casos como quiebra, independientemente de si lo son o no. Esta diferencia de performance puede deberse a varios motivos, tales como:
+% Se utiliza el dataset de RFSD o \textit{The Russian Financial Statements Database} \citep{dataset:institute_for_the_rule_of_law_at_european_university_at_st._petersburg_2025}, que contiene información financiera de empresas rusas entre los años 2011 y 2024. En particular, se utiliza un subconjunto de un millón de registros correspondientes al año 2024. No se utiliza el total de registros (tres millones) por limitaciones de la memoria RAM del entorno de trabajo.
 
-\begin{itemize}
-    \item La información presente en cada dataset: el dataset de Polonia tiene 11 columnas, mientras que el de Taiwán tiene 95.
-    \item A cómo se obtuvieron los valores.
-    \item A cómo se mide la quiebra en estos países: pueden tener diferentes normas contables y legislaciones de quiebra.
-\end{itemize}
+% De manera similar al dataset polaco (ver sección \ref{subsec:dataset_polaco}), no todas las columnas coinciden con el dataset de Taiwán. Por ello, las faltantes son cargadas con valores iguales a cero, mientras que las columnas equivalentes se obtienen de la siguiente manera:
 
-\subsection{Dataset ruso}
-\label{subsec:dataset_ruso}
+% \begin{itemize}
+%     \item \texttt{ROA(C) before interest}: división entre las columnas \texttt{line\_2400} y \texttt{line\_1600} del dataset ruso. Representa la utilidad neta sobre el activo total.
+%     \item \texttt{Current Ratio}: división entre las columnas \texttt{line\_1200} y \texttt{line\_1500} del dataset ruso. Representa la capacidad de pago a corto plazo.
+%     \item \texttt{Quick Ratio}: representa la liquidez inmediata. Se calcula mediante la fórmula ${(\texttt{line\_1200} - \texttt{line\_1210}) / \texttt{line\_1500}}$.
+%     \item \texttt{Net worth/Assets}: división de las columnas \texttt{line\_1300} y \texttt{line\_1600} del dataset ruso. Es la proporción de capital propio en la empresa.
+%     \item \texttt{Debt ratio \%}: división entre las columnas \texttt{line\_1500} y \texttt{line\_1600} del dataset ruso. Consiste en el nivel de apalancamiento.
+%     \item \texttt{Inventory Turnover Rate}: división entre las columnas \texttt{line\_2120} y \texttt{line\_1210} del dataset ruso. Consiste en la eficiencia en la rotación de mercancía.
+%     \item \texttt{Current Assets/Total Assets}: división de las columnas \texttt{line\_1200} y \texttt{line\_1600} del dataset ruso. Representa el peso de los activos líquidos en el balance.
+%     \item \texttt{Inventory/Total Assets}: división entre las columnas \texttt{line\_1210} y \texttt{line\_1600} del dataset ruso. Representación del peso de las existencias en el activo total.
+%     \item \texttt{Operating Revenue}: columna \texttt{line\_2110} del dataset ruso. Son los ingresos brutos por ventas/operación.
+%     \item \texttt{Net Income}: columna \texttt{line\_2400} del dataset ruso. Representa el resultado final del ejercicio.
+% \end{itemize}
 
-Se utiliza el dataset de RFSD o \textit{The Russian Financial Statements Database} \citep{dataset:institute_for_the_rule_of_law_at_european_university_at_st._petersburg_2025}, que contiene información financiera de empresas rusas entre los años 2011 y 2024. En particular, se utiliza un subconjunto de un millón de registros correspondientes al año 2024. No se utiliza el total de registros (tres millones) por limitaciones de la memoria RAM del entorno de trabajo.
+% Otra diferencia con el dataset de Taiwán es la columna de bancarrota. El dataset ruso no indica si una empresa quiebra o no, sino que esto se calcula con las siguientes columnas:
 
-De manera similar al dataset polaco (ver sección \ref{subsec:dataset_polaco}), no todas las columnas coinciden con el dataset de Taiwán. Por ello, las faltantes son cargadas con valores iguales a cero, mientras que las columnas equivalentes se obtienen de la siguiente manera:
+% \begin{itemize}
+%     \item \texttt{dissolution\_date}: indica la fecha de disolución de una empresa. Si no es nula, la empresa sí entró en quiebra.
+%     \item \texttt{filed}: indica si una empresa presenta estados financieros. Si toma el valor $0$, la empresa sí entró en quiebra.
+% \end{itemize}
 
-\begin{itemize}
-    \item \texttt{ROA(C) before interest}: división entre las columnas \texttt{line\_2400} y \texttt{line\_1600} del dataset ruso. Representa la utilidad neta sobre el activo total.
-    \item \texttt{Current Ratio}: división entre las columnas \texttt{line\_1200} y \texttt{line\_1500} del dataset ruso. Representa la capacidad de pago a corto plazo.
-    \item \texttt{Quick Ratio}: representa la liquidez inmediata. Se calcula mediante la fórmula ${(\texttt{line\_1200} - \texttt{line\_1210}) / \texttt{line\_1500}}$.
-    \item \texttt{Net worth/Assets}: división de las columnas \texttt{line\_1300} y \texttt{line\_1600} del dataset ruso. Es la proporción de capital propio en la empresa.
-    \item \texttt{Debt ratio \%}: división entre las columnas \texttt{line\_1500} y \texttt{line\_1600} del dataset ruso. Consiste en el nivel de apalancamiento.
-    \item \texttt{Inventory Turnover Rate}: división entre las columnas \texttt{line\_2120} y \texttt{line\_1210} del dataset ruso. Consiste en la eficiencia en la rotación de mercancía.
-    \item \texttt{Current Assets/Total Assets}: división de las columnas \texttt{line\_1200} y \texttt{line\_1600} del dataset ruso. Representa el peso de los activos líquidos en el balance.
-    \item \texttt{Inventory/Total Assets}: división entre las columnas \texttt{line\_1210} y \texttt{line\_1600} del dataset ruso. Representación del peso de las existencias en el activo total.
-    \item \texttt{Operating Revenue}: columna \texttt{line\_2110} del dataset ruso. Son los ingresos brutos por ventas/operación.
-    \item \texttt{Net Income}: columna \texttt{line\_2400} del dataset ruso. Representa el resultado final del ejercicio.
-\end{itemize}
+% La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, dando como resultado los valores que se muestran en la tabla \ref{tab:evaluacion-dataset-ruso}.
 
-Otra diferencia con el dataset de Taiwán es la columna de bancarrota. El dataset ruso no indica si una empresa quiebra o no, sino que esto se calcula con las siguientes columnas:
+% \begin{table}[H]
+% 	\centering
+% 	\caption[Evaluación del dataset ruso]{Evaluación del dataset ruso.}
+% 	\begin{tabular}{c c c}
+% 		\toprule
+% 		\textbf{Métrica} 	 & \textbf{Dataset de Rusia} & \textbf{Dataset de Taiwán} \\
+% 		\midrule
+%         recall & 1 & 0,7727 \\
+%         precision & 0,2993 & 0,2227 \\
+%         f1-score & 0,4606 & 0,3457 \\
+%         f2-score & 0,6810 & 0,5172 \\
+%         AUPRC (average precision) & 0,6422 & 0,3259\\
+%         AUC-ROC & 0,8773 & 0,9210 \\
+% 		\bottomrule
+% 		\hline
+% 	\end{tabular}
+% 	\label{tab:evaluacion-dataset-ruso}
+% \end{table}
 
-\begin{itemize}
-    \item \texttt{dissolution\_date}: indica la fecha de disolución de una empresa. Si no es nula, la empresa sí entró en quiebra.
-    \item \texttt{filed}: indica si una empresa presenta estados financieros. Si toma el valor $0$, la empresa sí entró en quiebra.
-\end{itemize}
+% En este caso se obtuvieron mejores métricas que con el dataset de Polonia. Algunas de estas son incluso mejores que la del dataset original. La métrica AURC-ROC, con valor de $0,8773$, es mucho mejor que el caso del dataset polaco ($0,5096$, que indica un comportamiento azaroso), pero menor a la del dataset de Taiwán ($0,9210$). El \textit{recall} es $1$, pero a diferencia del dataset polaco, la métrica de \textit{precision} es de $0,2993$. Esto indica que el modelo genera muchos falsos positivos. Por ejemplo, de $10$ casos clasificados como quiebra, solo $3$ serán correctos. Por su parte, la métrica AUPRC ($0,6422$) es mejor que las obtenidas en el dataset de Polonia ($0,0429$) y de Taiwán ($0,3259$). Esto indica que el modelo mantiene una buena relación entre \textit{precision} y \textit{recall}.
 
-La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}, dando como resultado los valores que se muestran en la tabla \ref{tab:evaluacion-dataset-ruso}.
+% Se puede decir que el modelo entrenado con el dataset de Taiwán puede detectar quiebras asociadas al mercado ruso, pero es sensible a clasificar erróneamente a empresas sanas. Esta imprecisión puede deberse al formato del dataset ruso, que solamente tiene $11$ columnas equivalentes con el dataset de Taiwán. De manera similar al caso Polonia, pueden haber también diferentes legislaciones y/o definiciones que inciden en la definición de una quiebra.
 
-\begin{table}[H]
-	\centering
-	\caption[Evaluación del dataset ruso]{Evaluación del dataset ruso.}
-	\begin{tabular}{c c c}
-		\toprule
-		\textbf{Métrica} 	 & \textbf{Dataset de Rusia} & \textbf{Dataset de Taiwán} \\
-		\midrule
-        recall & 1 & 0,7727 \\
-        precision & 0,2993 & 0,2227 \\
-        f1-score & 0,4606 & 0,3457 \\
-        f2-score & 0,6810 & 0,5172 \\
-        AUPRC (average precision) & 0,6422 & 0,3259\\
-        AUC-ROC & 0,8773 & 0,9210 \\
-		\bottomrule
-		\hline
-	\end{tabular}
-	\label{tab:evaluacion-dataset-ruso}
-\end{table}
+% \subsection{Dataset de Estados Unidos}
+% \label{subsec:dataset_usa}
 
-En este caso se obtuvieron mejores métricas que con el dataset de Polonia. Algunas de estas son incluso mejores que la del dataset original. La métrica AURC-ROC, con valor de $0,8773$, es mucho mejor que el caso del dataset polaco ($0,5096$, que indica un comportamiento azaroso), pero menor a la del dataset de Taiwán ($0,9210$). El \textit{recall} es $1$, pero a diferencia del dataset polaco, la métrica de \textit{precision} es de $0,2993$. Esto indica que el modelo genera muchos falsos positivos. Por ejemplo, de $10$ casos clasificados como quiebra, solo $3$ serán correctos. Por su parte, la métrica AUPRC ($0,6422$) es mejor que las obtenidas en el dataset de Polonia ($0,0429$) y de Taiwán ($0,3259$). Esto indica que el modelo mantiene una buena relación entre \textit{precision} y \textit{recall}.
+% Se utiliza el dataset de \textit{Bankruptcy prediction dataset for american companies in the stock market} \citep{dataset:usa_bankruptcy}, que contiene información financiera de empresas que cotizan en bolsas estadounidenses (NYSE y NASDAQ). Esta información cubre los años entre 1998 y 2018, y se divide en 78682 y 21 columnas. Solo 13 de estas 21 columnas tienen un equivalente en el dataset de Taiwán:
 
-Se puede decir que el modelo entrenado con el dataset de Taiwán puede detectar quiebras asociadas al mercado ruso, pero es sensible a clasificar erróneamente a empresas sanas. Esta imprecisión puede deberse al formato del dataset ruso, que solamente tiene $11$ columnas equivalentes con el dataset de Taiwán. De manera similar al caso Polonia, pueden haber también diferentes legislaciones y/o definiciones que inciden en la definición de una quiebra.
+% \begin{itemize}
+%     \item \texttt{Bankrupt?}: se obtiene a partir de la columna \texttt{status\_label} del dataset de Estados Unidos, y se trata de la variable objetivo. Se caracteriza por estar desbalanceada (5220 presentan quiebra, mientras que 73462 no).
+%     \item \texttt{Net Income to Total Assets}: división entre las columnas \texttt{X6} y \texttt{X10} del dataset de Estados Unidos. Representa la rentabilidad sobre activos (ROA).
+%     \item \texttt{Debt ratio \%}: división entre las columnas \texttt{X17} y \texttt{X10} del dataset de Estados Unidos. Representa la proporción de deuda.
+%     \item \texttt{Current Ratio}: división entre las columnas \texttt{X1} y \texttt{X14} del dataset de Estados Unidos. Es la capacidad de la empresa para pagar sus deudas a corto plazo con sus activos corrientes.
+%     \item \texttt{Retained Earnings to Total Assets}: división entre las columnas \texttt{X15} y \texttt{X10} del dataset de Estados Unidos. Mide el apalancamiento histórico y la capacidad de reinversión acumulada.
+%     \item \texttt{Operating Gross Margin}: división entre las columnas \texttt{X13} y \texttt{X9} del dataset de Estados Unidos. Representa el margen bruto operativo.
+%     \item \texttt{Net worth/Assets}: patrimonio neto sobre activos. Se calcula mediante la fórmula \texttt{(X10 - X17) / X10}.
+%     \item \texttt{Quick Ratio}: se calcula mediante la fórmula \texttt{(X1 - X5) / X14}. Es la capacidad de pago inmediato.
+%     \item \texttt{Liability to Equity}: consiste en la relación deuda/capital. Se calcula mediante la fórmula \texttt{X17 / (X10 - X17)}.
+%     % \item \texttt{Net Income to Stockholder's Equity}: rentabilidad sobre capital. Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}.
+%     \item \texttt{Net Income to Stockholder's Equity}: se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}. Representa la rentabilidad sobre capital.
+%     \item \texttt{Current Liability to Assets}: pasivo circulante sobre activos. Se obtiene al dividir las columnas \texttt{X14} y \texttt{X10} del dataset de Estados Unidos.
+%     \item \texttt{ROA(C) before interest and ...}: rentabilidad operativa. Se obtiene al dividir las columnas \texttt{X4} y \texttt{X10}.
+%     \item \texttt{Working Capital to Total Assets}: capital de trabajo sobre activos. Se calcula mediante la fórmula \texttt{(X1 - X14) / X10}.
+% \end{itemize}
 
-\subsection{Dataset de Estados Unidos}
-\label{subsec:dataset_usa}
+% La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}. Los resultados se muestran en la tabla \ref{tab:evaluacion-dataset-usa}.
 
-Se utiliza el dataset de \textit{Bankruptcy prediction dataset for american companies in the stock market} \citep{dataset:usa_bankruptcy}, que contiene información financiera de empresas que cotizan en bolsas estadounidenses (NYSE y NASDAQ). Esta información cubre los años entre 1998 y 2018, y se divide en 78682 y 21 columnas. Solo 13 de estas 21 columnas tienen un equivalente en el dataset de Taiwán:
+% \begin{table}[H]
+% 	\centering
+% 	\caption[Evaluación del dataset estadounidense]{Evaluación del dataset estadounidense.}
+% 	\begin{tabular}{c c c}
+% 		\toprule
+% 		\textbf{Métrica} 	 & \textbf{Dataset de Rusia} & \textbf{Dataset de Taiwán} \\
+% 		\midrule
+%         recall & 0,9941 & 0,7727 \\
+%         precision & 0,0667 & 0,2227 \\
+%         f1-score & 0,1250 & 0,3457 \\
+%         f2-score & 0,2628 & 0,5172 \\
+%         AUPRC (average precision) & 0,0663 & 0,3259\\
+%         AUC-ROC & 0,4999 & 0,9210 \\
+% 		\bottomrule
+% 		\hline
+% 	\end{tabular}
+% 	\label{tab:evaluacion-dataset-usa}
+% \end{table}
 
-\begin{itemize}
-    \item \texttt{Bankrupt?}: se obtiene a partir de la columna \texttt{status\_label} del dataset de Estados Unidos, y se trata de la variable objetivo. Se caracteriza por estar desbalanceada (5220 presentan quiebra, mientras que 73462 no).
-    \item \texttt{Net Income to Total Assets}: división entre las columnas \texttt{X6} y \texttt{X10} del dataset de Estados Unidos. Representa la rentabilidad sobre activos (ROA).
-    \item \texttt{Debt ratio \%}: división entre las columnas \texttt{X17} y \texttt{X10} del dataset de Estados Unidos. Representa la proporción de deuda.
-    \item \texttt{Current Ratio}: división entre las columnas \texttt{X1} y \texttt{X14} del dataset de Estados Unidos. Es la capacidad de la empresa para pagar sus deudas a corto plazo con sus activos corrientes.
-    \item \texttt{Retained Earnings to Total Assets}: división entre las columnas \texttt{X15} y \texttt{X10} del dataset de Estados Unidos. Mide el apalancamiento histórico y la capacidad de reinversión acumulada.
-    \item \texttt{Operating Gross Margin}: división entre las columnas \texttt{X13} y \texttt{X9} del dataset de Estados Unidos. Representa el margen bruto operativo.
-    \item \texttt{Net worth/Assets}: patrimonio neto sobre activos. Se calcula mediante la fórmula \texttt{(X10 - X17) / X10}.
-    \item \texttt{Quick Ratio}: se calcula mediante la fórmula \texttt{(X1 - X5) / X14}. Es la capacidad de pago inmediato.
-    \item \texttt{Liability to Equity}: consiste en la relación deuda/capital. Se calcula mediante la fórmula \texttt{X17 / (X10 - X17)}.
-    % \item \texttt{Net Income to Stockholder's Equity}: rentabilidad sobre capital. Se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}.
-    \item \texttt{Net Income to Stockholder's Equity}: se calcula mediante la fórmula \texttt{X6 / (X10 - X17)}. Representa la rentabilidad sobre capital.
-    \item \texttt{Current Liability to Assets}: pasivo circulante sobre activos. Se obtiene al dividir las columnas \texttt{X14} y \texttt{X10} del dataset de Estados Unidos.
-    \item \texttt{ROA(C) before interest and ...}: rentabilidad operativa. Se obtiene al dividir las columnas \texttt{X4} y \texttt{X10}.
-    \item \texttt{Working Capital to Total Assets}: capital de trabajo sobre activos. Se calcula mediante la fórmula \texttt{(X1 - X14) / X10}.
-\end{itemize}
+% Similar al caso del dataset polaco que se detalla en la sección \ref{subsec:dataset_polaco}, se obtuvieron métricas muy bajas. Se tiene un AUC-ROC de $0,4999$, que indica un comportamiento similar a un modelo aleatorio. Si bien el \textit{recall} es un valor muy alto ($0,9941$), si se analiza la \textit{precision} ($0,0667$), se concluye que el modelo clasifica a la mayoría de los casos como quiebra, independientemente de que lo sean o no.
 
-La evaluación se realiza con el mejor modelo, XGBoost con \textit{pipelines}. Los resultados se muestran en la tabla \ref{tab:evaluacion-dataset-usa}.
-
-\begin{table}[H]
-	\centering
-	\caption[Evaluación del dataset estadounidense]{Evaluación del dataset estadounidense.}
-	\begin{tabular}{c c c}
-		\toprule
-		\textbf{Métrica} 	 & \textbf{Dataset de Rusia} & \textbf{Dataset de Taiwán} \\
-		\midrule
-        recall & 0,9941 & 0,7727 \\
-        precision & 0,0667 & 0,2227 \\
-        f1-score & 0,1250 & 0,3457 \\
-        f2-score & 0,2628 & 0,5172 \\
-        AUPRC (average precision) & 0,0663 & 0,3259\\
-        AUC-ROC & 0,4999 & 0,9210 \\
-		\bottomrule
-		\hline
-	\end{tabular}
-	\label{tab:evaluacion-dataset-usa}
-\end{table}
-
-Similar al caso del dataset polaco que se detalla en la sección \ref{subsec:dataset_polaco}, se obtuvieron métricas muy bajas. Se tiene un AUC-ROC de $0,4999$, que indica un comportamiento similar a un modelo aleatorio. Si bien el \textit{recall} es un valor muy alto ($0,9941$), si se analiza la \textit{precision} ($0,0667$), se concluye que el modelo clasifica a la mayoría de los casos como quiebra, independientemente de que lo sean o no.
-
-Esta baja performance puede deberse a:
- \begin{itemize}
-     \item Diferencia de columnas entre datasets: el dataset de Taiwán tiene 95 columnas, pero el de Estados Unidos solo tiene 13 columnas equivalentes.
-     \item Diferentes formas de medir una quiebra: ambos países pueden tener diferentes normas contables y/o legislaciones de quiebra.
- \end{itemize}
+% Esta baja performance puede deberse a:
+%  \begin{itemize}
+%      \item Diferencia de columnas entre datasets: el dataset de Taiwán tiene 95 columnas, pero el de Estados Unidos solo tiene 13 columnas equivalentes.
+%      \item Diferentes formas de medir una quiebra: ambos países pueden tener diferentes normas contables y/o legislaciones de quiebra.
+%  \end{itemize}
