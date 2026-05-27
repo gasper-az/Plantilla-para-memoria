@@ -78,7 +78,7 @@ El \textit{model registry} de MLFlow se utiliza para seleccionar el modelo corre
 
 La figura \ref{fig:matriz-confusion-mejor-modelo} corresponde a la matriz de confusión normalizada por fila del mejor modelo (XGBoost - pipeline). Esta permite conocer qué tan bien clasifica el modelo a los casos de quiebra como así también a los casos de empresas sanas.
 
-La matriz indica que el modelo obtiene un \textit{recall} o \textit{true positive rate} de $0,77$, es decir, que el modelo detecta de manera satisfactoria al $77\%$ de las empresas que entran en quiebra. El $23\%$ que resta se clasifica de manera errónea, es decir, el modelo indica que no entra en quiebra. Esto se ve en el valor de \textit{false negative rate}, que es de $0,23$.
+La matriz indica que el modelo obtiene un \textit{recall} o \textit{true positive rate} de $0,79$, es decir, que el modelo detecta de manera satisfactoria al $79\%$ de las empresas que entran en quiebra. El $13\%$ que resta se clasifica de manera errónea, es decir, el modelo indica que no entra en quiebra. Esto se ve en el valor de \textit{false negative rate}, que es de $0,21$.
 
 En lo que respecta a las empresas sanas, el modelo detecta con éxito al $91\%$, tal como lo indica el \textit{true negative rate} o \textit{specifity} de $0,91$. El $9,4\%$ de casos que restan se clasifican de manera equivocada como quiebras, lo que se refleja en el \textit{false positive rate} de $0,094$.
 
@@ -90,6 +90,8 @@ En resumen, esta matriz describe de manera simple qué tan bien identifica el mo
 	\caption{Matriz de confusión del mejor modelo.}
 	\label{fig:matriz-confusion-mejor-modelo}
 \end{figure}
+
+En lo que respecta al valor de falsos negativos ($21\%$), el modelo podría clasificarlos de manera errónea por razones ajenas a las variables financieras, por ejemplo, cambio en regulaciones financieras del mercado de Taiwán, crisis inesperadas, entre otras.
 
 \subsection{Curva ROC del mejor modelo}
 
@@ -123,7 +125,7 @@ La figura \ref{fig:fig_precision_recall_curve} muestra la curva \textit{precisio
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.95\textwidth]{./Figures/fig_precision_recall_curve.png}
+	\includegraphics[width=0.80\textwidth]{./Figures/fig_precision_recall_curve.png}
 	\caption{Curva \textit{precision-recall} del mejor modelo.}
 	\label{fig:fig_precision_recall_curve}
 \end{figure}
@@ -157,24 +159,49 @@ La tabla \ref{tab:var_importance_best_model} muestra las diez \textit{features} 
 % 	\label{tab:var_importance_best_model}
 % \end{table}
 
-\begin{table}[h]
+% \begin{table}[h]
+% 	\centering
+% 	\caption[Variables más importantes del mejor modelo]{Variables más importantes del mejor modelo.}
+% 	% \begin{tabular}{c c c}
+%     \begin{tabularx}{\textwidth}{l X c}
+% 		\toprule
+% 		\textbf{Feature} & \textbf{Descripción}	 & \textbf{Ganancia (\textit{gain})} \\
+% 		\midrule
+%         Working Capital/Equity & Proporción del capital de trabajo financiado por los accionistas. &   0,163086 \\
+%         Net Value Per Share (C) & Valor contable por acción bajo criterios estrictos de liquidación o consolidación reciente. &  0,096922\\
+%         Inventory Turnover Rate (times) & Frecuencia anual con la que se vende y reemplaza el inventario. &  0,069746 \\
+%         Cash Flow to Total Assets & Capacidad de los activos para generar efectivo neto. &  0,062084 \\
+%         Interest-bearing debt interest rate & Costo financiero o tasa cobrada por los acreedores. &  0,043152 \\
+%         Tax rate (A) &  Tasa impositiva efectiva que afecta los beneficios netos. & 0,040591 \\
+%         Quick Ratio & Capacidad de pago inmediato sin liquidar inventarios corrientes. &  0,029364 \\
+%         Current Liability to Assets &  Proporción de activos financiada con deuda a corto plazo. & 0,024506 \\
+%         Net Value Per Share (B) & Valor en libros tradicional por acción circulante bajo principios contables estándar. &  0,021983 \\
+%         Total income/Total expense & Índice de eficiencia operativa global y rentabilidad básica. &  0,017151 \\
+% 		\bottomrule
+% 		\hline
+% 	% \end{tabular}
+%     \end{tabularx}
+% 	\label{tab:var_importance_best_model}
+% \end{table}
+
+\begin{table}[H]
 	\centering
 	\caption[Variables más importantes del mejor modelo]{Variables más importantes del mejor modelo.}
 	% \begin{tabular}{c c c}
-    \begin{tabularx}{\textwidth}{l X c}
+    \begin{tabularx}{\textwidth}{c c}
 		\toprule
-		\textbf{Feature} & \textbf{Descripción}	 & \textbf{Ganancia (\textit{gain})} \\
+		\textbf{Feature} & \textbf{Ganancia (\textit{gain}) normalizada} \\
 		\midrule
-        Working Capital/Equity & Proporción del capital de trabajo financiado por los accionistas. &   0,163086 \\
-        Net Value Per Share (C) & Valor contable por acción bajo criterios estrictos de liquidación o consolidación reciente. &  0,096922\\
-        Inventory Turnover Rate (times) & Frecuencia anual con la que se vende y reemplaza el inventario. &  0,069746 \\
-        Cash Flow to Total Assets & Capacidad de los activos para generar efectivo neto. &  0,062084 \\
-        Interest-bearing debt interest rate & Costo financiero o tasa cobrada por los acreedores. &  0,043152 \\
-        Tax rate (A) &  Tasa impositiva efectiva que afecta los beneficios netos. & 0,040591 \\
-        Quick Ratio & Capacidad de pago inmediato sin liquidar inventarios corrientes. &  0,029364 \\
-        Current Liability to Assets &  Proporción de activos financiada con deuda a corto plazo. & 0,024506 \\
-        Net Value Per Share (B) & Valor en libros tradicional por acción circulante bajo principios contables estándar. &  0,021983 \\
-        Total income/Total expense & Índice de eficiencia operativa global y rentabilidad básica. &  0,017151 \\
+        \texttt{Working Capital/Equity} &   0,163086 \\
+        \texttt{Net Value Per Share (C)} &  0,096922\\
+        \texttt{Inventory Turnover Rate (times)} &  0,069746 \\
+        \texttt{Cash Flow to Total Assets} &  0,062084 \\
+        \texttt{Interest-bearing debt interest rate} &  0,043152 \\
+        \texttt{Tax rate (A)} & 0,040591 \\
+        \texttt{Quick Ratio} &  0,029364 \\
+        \texttt{Current Liability to Assets} & 0,024506 \\
+        \texttt{Net Value Per Share (B)} &  0,021983 \\
+        \texttt{Total income/Total expense} &  0,017151 \\
 		\bottomrule
 		\hline
 	% \end{tabular}
@@ -186,11 +213,11 @@ La tabla \ref{tab:var_importance_best_model} muestra las diez \textit{features} 
 
 % La siguiente variable con mayor ganancia es \texttt{Net Value Per Share (C)}, con un valor de $9,69\%$. Esto indica que el modelo evalúa las caídas drásticas en el valor real de liquidación por acción para predecir una quiebra de una empresa.
 
-En la tabla \ref{tab:var_importance_best_model} se observa que las variables \texttt{Working Capital/Equity} y \texttt{Net Value Per Share (C)} acumulan cerca del $26\%$ de la ganancia, por lo que son las que más le permiten al modelo definir una quiebra. Es decir, el modelo considera una quiebra cuando una empresa agota el capital de trabajo operativo que respaldan sus socios y cuando su valor de liquidación por acción disminuye o incluso se desploma.
+En la tabla \ref{tab:var_importance_best_model} se observa que las variables \texttt{Working Capital/Equity} (representa la proporción del capital de trabajo financiado por los accionistas) y \texttt{Net Value Per Share (C)} (valor contable por acción bajo criterios estrictos de liquidación o consolidación reciente) acumulan cerca del $26\%$ de la ganancia, por lo que son las que más le permiten al modelo definir una quiebra. Esto podría indicar que el modelo asocia la quiebra con empresas que agotan el capital de trabajo operativo que respaldan sus socios y cuyos valores de liquidación por acción disminuyen o incluso se desploman.
 
-Por su parte, las variables \texttt{Inventory Turnover Rate (times)}, \texttt{Cash Flow to Total Assets} y \texttt{Interest-bearing debt interest rate} acumulan cerca del $22\%$ de la ganancia del modelo. El modelo penaliza a las empresas que no rotan sus inventarios y que no generan caja real con sus activos. Esta penalización es aún mayor si las empresas deben pagar tasas altas de interés a sus acreedores.
+Por su parte, las variables \texttt{Inventory Turnover Rate (times)} (consiste en la frecuencia anual con la que se vende y reemplaza el inventario), \texttt{Cash Flow to Total Assets} (representa la capacidad de los activos para generar efectivo neto) e \texttt{Interest-bearing debt interest rate} (costo financiero o tasa cobrada por los acreedores) acumulan cerca del $22\%$ de la ganancia del modelo. Esto podría indicar que el modelo penaliza a las empresas que no rotan sus inventarios y que no generan caja real con sus activos. Esta penalización sería aún mayor si las empresas deben pagar tasas altas de interés a sus acreedores.
 
-En general, las variables más importantes del modelo indican que este determina la quiebra a partir de la liquidez inmediata y la eficiencia del ciclo de efectivo de una empresa dada.
+En general, las variables más importantes del modelo podrían indicar que este determina la quiebra a partir de la liquidez inmediata y la eficiencia del ciclo de efectivo de una empresa dada.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
@@ -234,7 +261,7 @@ En la figura \ref{fig:validacion_dag02} se observan los resultados del DAG \text
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.95\textwidth]{./Figures/model_training_validation.png}
+	\includegraphics[width=0.87\textwidth]{./Figures/model_training_validation.png}
 	\caption{Validación DAG \texttt{model training}.}
 	\label{fig:validacion_dag02}
 \end{figure}
@@ -355,7 +382,7 @@ A partir de esta información, se devuelve un mensaje que indica si la empresa e
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.95\textwidth]{./Figures/predict.png}
+	\includegraphics[width=0.87\textwidth]{./Figures/predict.png}
 	\caption{Endpoint \texttt{predict}.}
 	\label{fig:predict}
 \end{figure}

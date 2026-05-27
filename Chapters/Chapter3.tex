@@ -176,7 +176,7 @@ Tal como se menciona en la sección \ref{subsec:division_dataset}, tanto el data
 	\label{fig:descabalance-target}
 \end{figure}
 
-Para resolver el desbalance se realizan pruebas con SMOTE \citep{article:smote}, SMOTE-ENN \citep{article:smoteenn} y ADASYN \citep{article:adasyn}, técnicas que permiten generar datos sintéticos de distintas maneras, tal como se explica en la sección \ref{subsec:tecnicas_balanceo}. Como estos datos son sintéticos, las técnicas se aplican solamente en el dataset de \textit{train}, ya que aplicarlas a \textit{test} podría provocar \textit{data leakage}.
+Para resolver el desbalance se realizan pruebas con SMOTE \citep{article:smote}, SMOTE-ENN \citep{article:smoteenn} y ADASYN \citep{article:adasyn}, técnicas que permiten generar datos sintéticos de distintas maneras, tal como se explica en la sección \ref{subsec:tecnicas_balanceo}. Las técnicas se aplican solo en el dataset de \textit{train}, ya que el conjunto de \textit{test} debe reflejar la distribución original del problema para que la evaluación sea representativa del escenario real.
 
 Los resultados de aplicar estas técnicas se observan en la tabla \ref{tab:resultados-balanceo}. En esta se observa que SMOTE-ENN es la que menos registros generó, como así también la que mayor diferencia entre clases tiene (la clase positiva, o empresas que entran en quiebra, tiene 691 registros más que la otra clase). Igualmente, se opta por aplicar esta técnica en el flujo de trabajo final, ya que es la que mejor resutados arroja.
 
@@ -216,7 +216,7 @@ Una vez preprocesado el dataset original y generados los datasets de \textit{tra
 \subsection{Pipelines y modelos}
 \label{sec:pipelines_y_modelos}
 
-En este trabajo se realizaron distintas pruebas con modelos de \textit{machine learning}. En todas estas, el preprocesamiento aplicado era el descrito en la sección \ref{sec:preprocesamiento_de_datos}, es decir, una serie de técnicas que, aplicadas sobre el dataset original, generaban un dataset final de \textit{train} y otro de \textit{test}. Luego, estos dataset se utilizan como \textit{input} de los modelos, tanto para entrenarlos como para evaluarlos. Pero ciertos modelos no presentaban buenos resultados. Un ejemplo es XGBoost, que en ciertas pruebas arroja un \textit{recall} de 0,42, un valor muy bajo.
+En este trabajo se realizaron distintas pruebas con modelos de \textit{machine learning}. En todas estas, el preprocesamiento aplicado era el descrito en la sección \ref{sec:preprocesamiento_de_datos}, es decir, una serie de técnicas que, aplicadas sobre el dataset original, generaban un dataset final de \textit{train} y otro de \textit{test}. Luego, estos datasets se utilizan como \textit{input} de los modelos, tanto para entrenarlos como para evaluarlos. Pero ciertos modelos no presentaban buenos resultados. Un ejemplo es XGBoost, que en ciertas pruebas arroja un \textit{recall} de 0,42, un valor muy bajo.
 
 Para mejorar esto, se utiliza la clase \texttt{Pipeline} \citep{WEBSITE:imblearn-pipeline} de \texttt{Imblearn} \citep{WEBSITE:imblearn}. Tal como su nombre lo indica, permite generar un \textit{pipeline} o secuencia de pasos sobre un dataset a fin de ajustarlo, y posteriormente transformar o aplicar los pasos tanto en este como en otros datasets. Las ventajas que poseen estos \textit{pipelines} es que procesan mejor los datos de datasets desbalanceados, manejan mejor el \textit{cross-validation} con \textit{resampling} (técnica que se explica posteriormente) y está específicamente diseñado para usarse al optimizar hiperparámetros.
 
@@ -353,7 +353,7 @@ Los mejores hiperparámetros encontrados para XGBoost se listan en la tabla \ref
         \texttt{reg\_alpha} & $0,1$ \\
         \texttt{reg\_lambda} & $5$ \\
         \texttt{n\_estimators} & $700$ \\
-        \texttt{gamma} & $3,9311947393215356$ \\
+        \texttt{gamma} & $3,931$ \\
         Selección de features & \texttt{SelectPercentile} \\
         \texttt{percentile} &  $75$ \\
 		\bottomrule
